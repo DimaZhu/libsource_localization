@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       -= core gui
+QT       -= gui
 
 TARGET = estimators
 TEMPLATE = lib
@@ -24,14 +24,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         estimators.cpp \
-    pel_lh.cpp
+    pel_lh.cpp \
+    estimator_pel.cpp
 
 HEADERS += \
         estimators.h \
         estimators_global.h \ 
-    pel_lh.h
+    pel_lh.h \
+    estimator_pel.h
 
-INCLUDEPATH += /usr/lib64/dlib-19.7/
+INCLUDEPATH += $$PWD/dlib-19.7/\
+                             /usr/include/c++/5.4.0/\
+                             /usr/include/\
+                             /usr/include/python2.7/
+
 
 LIBS += -pthread
 CONFIG += link_pkgconfig
@@ -41,4 +47,6 @@ unix {
     target.path = /usr/lib
     INSTALLS += target
 }
+
+QMAKE_CXXFLAGS += -Wmissing-field-initializers
 
