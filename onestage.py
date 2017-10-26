@@ -6,44 +6,9 @@ __author__ = 'Dmitry Zhukov'
 
 
 import numpy as np
-from onestage_C import aoa_likelihood_c
+import scipy as sp
+from likelihood import Pel_Lh
 import siggen
-
-
-# def aoa_likelihood(signal, ant_coord, peleng, f0):
-#     """Maximum likelihood function for angle of arrival"""
-#
-#     likelihood = 0
-#     wave_length = 3e8 / f0
-#     freq_2pi_c = 2 * np.pi / wave_length
-#     r = np.array([np.cos(peleng[1]) * np.cos(peleng[0]), np.cos(peleng[1]) * np.sin(peleng[0]), np.sin(peleng[1])])
-#     l_max = ant_coord.shape[1] - 1
-#     m_max = l_max + 1
-#     k_max = signal.shape[1]
-#     ant_delta = np.zeros(3, np.double)
-#
-#     for l in range(l_max):
-#         for m in range(l + 1, m_max):
-#             sum_sin = 0
-#             sum_cos = 0
-#             sum_amp = 0
-#             for k in range(k_max):
-#                 amp = abs(signal[l, k]) * abs(signal[m, k])
-#                 delta_phz = np.angle(signal[m, k]) - np.angle(signal[l, k])
-#                 sum_sin += amp * np.sin(delta_phz)
-#                 sum_cos += amp * np.cos(delta_phz)
-#                 sum_amp += amp
-#
-#             ant_delta[0] = ant_coord[0, l] - ant_coord[0, m]
-#             ant_delta[1] = ant_coord[1, l] - ant_coord[1, m]
-#             ant_delta[2] = ant_coord[2, l] - ant_coord[2, m]
-#             coord_delta = ant_delta[0] * r[0] + ant_delta[1] * r[1] + ant_delta[2] * r[2]
-#             full_phase = freq_2pi_c * coord_delta + np.angle(sum_cos + 1j * sum_sin)
-#             likelihood += sum_amp ** np.cos(full_phase)
-#
-#     return likelihood
-#
-
 
 
 def peleng(antenna, target):
@@ -58,38 +23,37 @@ def peleng(antenna, target):
     return peleng
 
 
-def aoa_likelihood(signal, ant_coord, peleng, f0):
-    return aoa_likelihood_c(signal, ant_coord, peleng, f0)
-    # likelihood = 0
-    # wave_length = 3e8 / f0
-    # freq_2pi_c = 2 * np.pi / wave_length
-    # r = np.array([np.cos(peleng[1]) * np.cos(peleng[0]), np.cos(peleng[1]) * np.sin(peleng[0]), np.sin(peleng[1])])
-    # l_max = ant_coord.shape[1] - 1
-    # m_max = l_max + 1
-    # k_max = signal.shape[1]
-    # ant_delta = np.zeros(3)
-    #
-    # for l in range(l_max):
-    #     for m in range(l + 1, m_max):
-    #         sum_sin = 0
-    #         sum_cos = 0
-    #         sum_amp = 0
-    #         for k in range(k_max):
-    #             amp = np.abs(signal[m, k]) * np.abs(signal[l, k])
-    #             delta_phz = np.angle(signal[l, k]) - np.angle(signal[m, k]) # !NOTE! похоже здесь ошибка в теории!
-    #             sum_sin += amp * np.sin(delta_phz)
-    #             sum_cos += amp * np.cos(delta_phz)
-    #             sum_amp += signal[m, k] * np.conj(signal[l, k])
-    #
-    #         ant_delta[0] = ant_coord[0, m] - ant_coord[0, l]
-    #         ant_delta[1] = ant_coord[1, m] - ant_coord[1, l]
-    #         ant_delta[2] = ant_coord[2, m] - ant_coord[2, l]
-    #         coord_delta = ant_delta[0] * r[0] + ant_delta[1] * r[1] + ant_delta[2] * r[2]
-    #         pseudophase = np.angle(sum_cos + 1j * sum_sin)
-    #         full_phase = freq_2pi_c * coord_delta + pseudophase
-    #         likelihood += np.abs(sum_amp) ** np.cos(full_phase)
-    #
-    # return likelihood
+def pel_likelihood(signal, ant_coord, peleng, f0):
+    likelihood = 0
+    wave_length = 3e8 / f0
+    freq_2pi_c = 2 * np.pi / wave_length
+    r = np.array([np.cos(peleng[1]) * np.cos(peleng[0]), np.cos(peleng[1]) * np.sin(peleng[0]), np.sin(peleng[1])])
+    l_max = ant_coord.shape[1] - 1
+    m_max = l_max + 1
+    k_max = signal.shape[1]
+    ant_delta = np.zeros(3)
+
+    for l in range(l_max):
+        for m in range(l + 1, m_max):
+            sum_sin = 0
+            sum_cos = 0
+            sum_amp = 0
+            for k in range(k_max):
+                amp = np.abs(signal[m, k]) * np.abs(signal[l, k])
+                delta_phz = np.angle(signal[l, k]) - np.angle(signal[m, k]) # !NOTE! похоже здесь ошибка в теории!
+                sum_sin += amp * np.sin(delta_phz)
+                sum_cos += amp * np.cos(delta_phz)
+                sum_amp += signal[m, k] * np.conj(signal[l, k])
+
+            ant_delta[0] = ant_coord[0, m] - ant_coord[0, l]
+            ant_delta[1] = ant_coord[1, m] - ant_coord[1, l]
+            ant_delta[2] = ant_coord[2, m] - ant_coord[2, l]
+            coord_delta = ant_delta[0] * r[0] + ant_delta[1] * r[1] + ant_delta[2] * r[2]
+            pseudophase = np.angle(sum_cos + 1j * sum_sin)
+            full_phase = freq_2pi_c * coord_delta + pseudophase
+            likelihood += np.abs(sum_amp) * np.cos(full_phase)
+
+    return likelihood
 
 
 def arp(antenna, f0, df, fs, f_res, size, **keywords):
@@ -132,11 +96,14 @@ def arp(antenna, f0, df, fs, f_res, size, **keywords):
 
     peleng = np.concatenate((alpha_mat, betta_mat), axis=0)
     likelihood = np.zeros(size)
+
+    lh = Pel_Lh(s[:, n_start:n_stop], antenna,  f0)
     for i in range(size[0]):
         for j in range(size[1]):
-            likelihood[i, j] = aoa_likelihood(s[:, n_start:n_stop], antenna.to_cartesian(), peleng[:, i, j], f0)
+            likelihood[i, j] = -lh.calc(peleng[:, i, j])
 
     return likelihood
+
 
 def beam_width_est(**kwargs):
 
@@ -206,119 +173,65 @@ def beam_width_est(**kwargs):
 
 class PelengEstimator:
     """ This class estimates pelengs"""
-    import numpy as np
-    bettaMin = np.radians(-85)
-    bettaMax = np.radians(85)
-    pointsTotal = 0
 
-    def prepare(self, antenna, bettaStep):
-        """Do advanced calculations"""
-        import numpy as np
-
-        betta = self.bettaMin
-        alpha = 0
-        self.pointsTotal = 0
+    def __init__(self, antenna, f0, df, fs, f_res):
+        beam_width = beam_width_est(antenna=antenna, f0=f0, df=df, fs=fs, f_res=f_res)
+        self.lh_size = np.array([np.ceil(np.pi / beam_width[1]) * 3, np.ceil(2 * np.pi / beam_width[0]) * 3], np.int)
+        self.f0 = f0
         self.antenna = antenna
 
-        while betta < self.bettaMax:
-            if abs(betta + np.pi / 2) < 1e-2:
-                betta += 0.01
+    def estimate(self, signal):
+        # 1) Грубая оценка
+        alpha_line = np.array([np.linspace(0, 2 * np.pi, self.lh_size[1], endpoint=False)])
+        alpha_mat = np.matmul(np.ones((1, self.lh_size[0], 1)), alpha_line)
 
-            if abs(betta - np.pi / 2 ) < 1e-2:
-                betta = self.bettaMax
+        betta_line = np.transpose(np.array([np.linspace(-np.pi / 2, np.pi / 2, self.lh_size[0])]))
+        betta_mat = np.matmul(betta_line, np.ones((1, 1, self.lh_size[1])))
 
-            self.pointsTotal += 1
-            alpha += bettaStep / np.cos(betta)
+        peleng = np.concatenate((alpha_mat, betta_mat), axis=0)
+        likelihood = np.zeros(self.lh_size)
 
-            if alpha >= 2 * np.pi:
-                betta += bettaStep
-                alpha = 0
+        lh_fun = Pel_Lh(signal, self.antenna, self.f0)
 
+        for i in range(self.lh_size[0]):
+            for j in range(self.lh_size[1]):
+                likelihood[i, j] = -lh_fun.calc(peleng[:, i, j])
 
-        print(self.pointsTotal)
+        max_ind = np.argmax(likelihood)
+        betta_max = max_ind % likelihood.shape[0]
+        alpha_max = max_ind % likelihood.shape[1]
+        pel_max = np.array([alpha_max, betta_max])
 
-        self.alphas = np.zeros(self.pointsTotal)
-        self.bettas = np.zeros( self.pointsTotal)
+        # 2) Интерполяция
 
-        self.pairsTotal = int(antenna.channelsTotal * (antenna.channelsTotal - 1) / 2)
-
-        self.coordDeltas = np.zeros((self.pairsTotal, self.pointsTotal))
-        antcoord = antenna.ToCartesian()
-        betta = self.bettaMin
-        alpha = 0
-        pointInd = 0
-
-        while betta < self.bettaMax:
-            if abs(betta + np.pi / 2) < 1e-2:
-                betta += 0.01
-
-            if abs(betta - np.pi / 2 ) < 1e-2:
-                betta = self.bettaMax
-
-            self.alphas[pointInd] = alpha
-            self.bettas[pointInd] = betta
-
-            pairInd = 0
-
-            r = np.array([[np.cos(betta) * np.cos(alpha)], [np.cos(betta) * np.sin(alpha)], [np.sin(betta)]])
-            for i in range(antenna.channelsTotal - 1):
-                for j in range(i + 1, antenna.channelsTotal):
-                    antDelta = np.array([antcoord[:,i] - antcoord[:,j]]).T
-                    self.coordDeltas[pairInd, pointInd] = np.matmul(antDelta.T, r)
-                    pairInd += 1
-
-            alpha += bettaStep / np.cos(betta)
-
-            if alpha >= 2 * np.pi:
-                betta += bettaStep
-                alpha = 0
-
-            pointInd += 1
+        # 3) Доуточнение
+        output = sp.optimize.minimize(lh_fun.calc, pel_max, method='Nelder-Mead')
+        return output.x
 
 
+def crb_phase(antenna, f0, df, f_res, snr, target):
+    """ Cramer Rao Lower bound for pelengation algorithm
+    NOTE! Assumptions snr in every channel is equal. Structure of every narrow base system is the same """
 
-    def estimate(self, signal, f0):
+    t = 1 / f_res
+    diag = np.diag(np.ones(antenna.channelsTotal - 1))
+    ones = np.ones((antenna.channelsTotal - 1, antenna.channelsTotal - 1))
+    p_n = 16 * np.pi**2 * t * f0**2 * df * snr**2 / (1 + antenna.channelsTotal * snr)
+    phi_mat = p_n * (antenna.channelsTotal * ones - diag)
+    b_mat = np.zeros(ones.shape)
+    ant_coord = antenna.to_cartesian()
+    c = 3e8
 
-        import numpy as np
+    for i in range(1, antenna.channelsTotal - 1):
+        dx = ant_coord[0, i] - ant_coord[0, 0]
+        dy = ant_coord[1, i] - ant_coord[1, 0]
+        dz = ant_coord[2, i] - ant_coord[2, 0]
 
-        pseudoPhase = np.zeros((self.pairsTotal))
-        mutualEnergyAmp = np.zeros((self.pairsTotal))
+        b_mat[i, 0] = 1 / c * (- dx * np.sin(target[0]) * np.cos(target[1])
+                               + dy * np.cos(target[0]) * np.cos(target[1]))
+        b_mat[i, 1] = 1 / c * (- dx * np.cos(target[0]) * np.sin(target[1])
+                               - dy * np.sin(target[0]) * np.sin(target[1])
+                               + dz * np.cos(target[1]))
 
-        pairInd = 0
-        for i in range(self.antenna.channelsTotal):
-            for j in range(i + 1, self.antenna.channelsTotal):
-                sum_sin = 0
-                sum_cos = 0
-                mutual_amp = 0
-                for k in range(signal.shape[1]):
-                    amp = np.abs(signal[i, k]) * np.abs(signal[j,k])
-                    delta_phz = np.angle(signal[i,k]) - np.angle(signal[j,k])
-                    sum_sin += amp * np.sin(delta_phz)
-                    sum_cos += amp * np.cos(delta_phz)
-                    mutual_amp += amp
-
-                pseudoPhase[pairInd] = np.angle(sum_cos + 1j * sum_sin)
-                mutualEnergyAmp[pairInd] = mutual_amp
-                pairInd += 1
-
-
-
-        L1_max = 0
-        pointMax = 0
-        L1_min = 0
-        waveLength = 3e8 / f0
-        freq_2pi_c = 2 * np.pi / waveLength
-
-        for point in range(self.pointsTotal):
-            L1 = 0
-            for pair in range(self.pairsTotal):
-                fullPhase = freq_2pi_c * self.coordDeltas[pair, point] + pseudoPhase[pair]
-                L1 += mutualEnergyAmp[pair] * np.cos(fullPhase)
-
-            if L1 > L1_max:
-                L1_max = L1
-                pointMax = point
-
-
-        peleng = np.array([self.alphas[pointMax], self.bettas[pointMax]])
-        return peleng
+    covar_mat = np.linalg.pinv(b_mat.transpose() * phi_mat * b_mat)
+    return np.array([covar_mat[0,0], covar_mat[1,1]])

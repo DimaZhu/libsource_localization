@@ -3,7 +3,7 @@
 
 #include "estimators_global.h"
 
-class ESTIMATORSSHARED_EXPORT Estimators
+class  Estimators
 {
 
 public:
