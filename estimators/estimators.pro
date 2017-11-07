@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       -= core gui
+QT       -= gui
 
 TARGET = estimators
 TEMPLATE = lib
@@ -24,24 +24,29 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         estimators.cpp \
-    pel_lh.cpp \
-    estimator_pel.cpp
+    pelengator.cpp
 
 HEADERS += \
         estimators.h \
-        estimators_global.h \ 
-    pel_lh.h \
-    estimator_pel.h
+        estimators_global.h \   
+    pelengator.h
 
-INCLUDEPATH += $$PWD/dlib-19.7/\
+INCLUDEPATH += $$PWD/../dlib-19.7/\
+                              $$PWD/../likelihoods/\
+                              $$PWD/../datatypes/\
+                              $$PWD/../pydatatypes/\
+                              $$PWD/../grid_synth/\
+                              $$PWD/../\
                              /usr/include/c++/5.4.0/\
                              /usr/include/\
                              /usr/include/python2.7/
 
 
-LIBS += -pthread
-CONFIG += link_pkgconfig
-PKGCONFIG += x11
+
+LIBS += -L$$PWD/../build_likelihoods/-llikelihoods\
+              -L$$PWD/../-lpydatatypes\
+              -L$$PWD/../-lgrid_synth\
+              -L$$PWD/../build_datatypes/-ldatatypes\
 
 unix {
     target.path = /usr/lib

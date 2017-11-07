@@ -124,8 +124,8 @@ class Antenna:
 def wgn_baseband(antenna, target, length, fs, **keywords):
     from scipy.stats import norm
 
-    N = antenna.channelsTotal
-    A = antenna.to_cartesian()
+    N = antenna.get_channels_total()
+    A = antenna.get_elements().transpose()
     T = np.matmul(target, np.ones((1, N)))
     r = np.sqrt(np.matmul(np.ones((1, 3)), (A - T) ** 2))
     tau = r.T / 3e8

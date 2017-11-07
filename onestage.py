@@ -7,18 +7,19 @@ __author__ = 'Dmitry Zhukov'
 
 import numpy as np
 import scipy as sp
-from likelihood import Pel_Lh
+from likelihoods import Lh_Pel
 import siggen
+import grid_synth
 
 
 def peleng(antenna, target):
     """ calculate pelengs from antenna to target"""
     import numpy as np
-    dr = target - antenna.base;
-    alpha = np.arctan( dr[1,0] / dr[0, 0])
+    dr = target - antenna.base
+    alpha = np.arctan(dr[1, 0] / dr[0, 0])
 
-    rxy = np.sqrt((target[0,0] - antenna.base[0,0])**2 + (target[1,0] - antenna.base[1,0])**2)
-    thetta = np.angle(rxy +  1j * (target[2,0] - antenna.base[2,0]))
+    rxy = np.sqrt((target[0, 0] - antenna.base[0, 0])**2 + (target[1, 0] - antenna.base[1, 0])**2)
+    thetta = np.angle(rxy + 1j * (target[2, 0] - antenna.base[2, 0]))
     peleng = np.array([alpha, thetta])
     return peleng
 
@@ -89,15 +90,12 @@ def arp(antenna, f0, df, fs, f_res, size, **keywords):
         raise RuntimeError("signal band is more than fs / 2 ")
 
     alpha_line = np.array([np.linspace(0, 2 * np.pi, size[1], endpoint=False)])
-    alpha_mat = np.matmul(np.ones((1, size[0], 1)), alpha_line)
+    betta_line = np.array([np.linspace(-np.pi / 2, np.pi / 2, size[0])])
+    peleng = grid_synth.meshgrid(alpha_line, betta_line)
 
-    betta_line = np.transpose(np.array([np.linspace(-np.pi / 2, np.pi / 2, size[0])]))
-    betta_mat = np.matmul(betta_line, np.ones((1, 1, size[1])))
-
-    peleng = np.concatenate((alpha_mat, betta_mat), axis=0)
     likelihood = np.zeros(size)
 
-    lh = Pel_Lh(s[:, n_start:n_stop], antenna,  f0)
+    lh = Lh_Pel(s[:, n_start:n_stop], antenna, f0)
     for i in range(size[0]):
         for j in range(size[1]):
             likelihood[i, j] = -lh.calc(peleng[:, i, j])
@@ -191,7 +189,7 @@ class PelengEstimator:
         peleng = np.concatenate((alpha_mat, betta_mat), axis=0)
         likelihood = np.zeros(self.lh_size)
 
-        lh_fun = Pel_Lh(signal, self.antenna, self.f0)
+        lh_fun = Lh_Pel(signal, self.antenna, self.f0)
 
         for i in range(self.lh_size[0]):
             for j in range(self.lh_size[1]):
@@ -213,25 +211,34 @@ def crb_phase(antenna, f0, df, f_res, snr, target):
     """ Cramer Rao Lower bound for pelengation algorithm
     NOTE! Assumptions snr in every channel is equal. Structure of every narrow base system is the same """
 
+    c = 3e8
+    dim = 2
     t = 1 / f_res
     diag = np.diag(np.ones(antenna.channelsTotal - 1))
     ones = np.ones((antenna.channelsTotal - 1, antenna.channelsTotal - 1))
-    p_n = 16 * np.pi**2 * t * f0**2 * df * snr**2 / (1 + antenna.channelsTotal * snr)
-    phi_mat = p_n * (antenna.channelsTotal * ones - diag)
-    b_mat = np.zeros(ones.shape)
+    wave_length = c / f0
+    p_n = 16 * np.pi**2 * t * wave_length**-2 * df * snr**2 / (1 + antenna.channelsTotal * snr)
+    phi_mat = antenna.channelsTotal * ones - diag
+    b_mat = np.zeros((antenna.channelsTotal - 1, dim))
     ant_coord = antenna.to_cartesian()
-    c = 3e8
 
-    for i in range(1, antenna.channelsTotal - 1):
+
+    for i in range(1, antenna.channelsTotal):
         dx = ant_coord[0, i] - ant_coord[0, 0]
         dy = ant_coord[1, i] - ant_coord[1, 0]
         dz = ant_coord[2, i] - ant_coord[2, 0]
 
-        b_mat[i, 0] = 1 / c * (- dx * np.sin(target[0]) * np.cos(target[1])
-                               + dy * np.cos(target[0]) * np.cos(target[1]))
-        b_mat[i, 1] = 1 / c * (- dx * np.cos(target[0]) * np.sin(target[1])
-                               - dy * np.sin(target[0]) * np.sin(target[1])
-                               + dz * np.cos(target[1]))
+        b_mat[i - 1, 0] = - dx * np.sin(target[0]) * np.cos(target[1])\
+                          + dy * np.cos(target[0]) * np.cos(target[1])
+        b_mat[i - 1, 1] = - dx * np.cos(target[0]) * np.sin(target[1])\
+                          - dy * np.sin(target[0]) * np.sin(target[1])\
+                          + dz * np.cos(target[1])
 
-    covar_mat = np.linalg.pinv(b_mat.transpose() * phi_mat * b_mat)
-    return np.array([covar_mat[0,0], covar_mat[1,1]])
+    mat1 = antenna.channelsTotal * np.matmul(np.matmul(b_mat.transpose(),ones), b_mat)
+    mat2 = np.matmul(b_mat.transpose(), b_mat)
+    mat3 = np.linalg.pinv(mat1 - mat2)
+    # mat1 = np.matmul(b_mat.transpose(), phi_mat)
+    # mat2 = np.matmul(mat1, b_mat)
+    # mat3 = np.linalg.pinv(mat2)
+    covar_mat = p_n**-1 * mat3
+    return np.array([covar_mat[0, 0], covar_mat[1, 1]])
