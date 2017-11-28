@@ -1,6 +1,8 @@
 import numpy as np
 import onestage
-import siggen
+
+from source_localization import siggen
+
 #input parametrs
 a = siggen.Antenna()
 a.load("/home/dima/.landing/AFS4.ini")
