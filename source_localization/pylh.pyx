@@ -1,6 +1,12 @@
 import dtypes as dt
 cimport dtypes as dt
 
+cdef extern from "lh.h":
+    cdef cppclass Lh:
+        Lh();
+        double calculate(double alpha, double betta) const
+        void set_verbose(bool )
+
 cdef extern from "lh_pel.h":
     cdef cppclass Lh_Pel:
         Lh_Pel(dt.Antenna *ant, dt.SpecFrame *data)

@@ -3,6 +3,7 @@ import plotly.graph_objs as go
 import plotly.plotly as ply
 from dtypes import PyAntenna as Antenna
 from onestage import arp
+from onestage import PelengEstimator
 
 # import pel_lh
 #
@@ -13,16 +14,16 @@ from onestage import arp
 
 #input parameters
 a = Antenna()
-a.load("/home/dima/.landing/AFS4.ini")
+a.load("/home/dima/.landing/AFS32.ini")
 el = a.get_elements()
-f0 = 120e6
+f0 = 1000e6
 N = 2 ** 16
-fs = 250e6
-f_res = 10e3
-df = 10e3
-# fs = f0 * N / (N/2 - 2)
-# f_res = fs / N
-# df = f_res
+# fs = 250e6
+# f_res = 10e3
+# df = 10e3
+fs = f0 * N / (N/2 - 2)
+f_res = fs / N
+df = f_res
 
 lh_size = (200, 200)
 alpha = np.linspace(0, 2 * np.pi, lh_size[1])
@@ -37,8 +38,8 @@ alpha_grid, betta_grid = np.meshgrid(alpha, betta)
 
 
 target_size = (1, 1)
-alpha_target = np.radians(180)
-betta_target = np.radians(0)
+alpha_target = np.radians(290)
+betta_target = np.radians(-9)
 pel = np.array([alpha_target, betta_target])
 
 lh = arp(a, f0, df, fs, f_res, lh_size, peleng=pel)

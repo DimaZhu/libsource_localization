@@ -18,7 +18,7 @@
   #define DL_IMPORT(_T) _T
 #endif
 
-__PYX_EXTERN_C std::vector<std::vector<std::vector<float> > >  pel_grid(std::vector<std::vector<float> > , double, double, double, double);
+__PYX_EXTERN_C std::vector<std::vector<std::vector<double> > >  pel_grid(std::vector<std::vector<float> > , double, double, double, double);
 
 #endif /* !__PYX_HAVE_API__grid */
 

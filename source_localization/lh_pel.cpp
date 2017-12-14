@@ -6,28 +6,32 @@ Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data)
         ant_pairs = ant->get_channels_total() * (ant->get_channels_total()-1) / 2;
         double wave_length = 3e8 / data->get_carrier();
         ang_freq = 2 * M_PI  / wave_length;
-
-//        printf("Amplitudes:\n");
-//        for (int j = 0; j < sig_length; ++j)
-//            for (int i = 0; i < elemets_total; ++i )
-//                printf("%f,  ", amp[i][j]);
-
-//        printf("\nPhases:\n");
-//        for (int j = 0; j < sig_length; ++j)
-//            for (int i = 0; i < elemets_total; ++i )
-//                printf("%f,  ", phase[i][j]);
-
-//        printf("\nElements Coordinates:\n");
-//        for (int i = 0; i < elemets_total; ++i )
-//        {
-//            printf("\n");
-//                for (int j = 0; j < DIM; ++j)
-//                printf("%f,  ", antenna_coordinates[i][j]);
-//        }
-
-//        printf("\nSignal length:  %d\nElements total: %d\nCarrier: %e", sig_length, elemets_total, f0);
-
         complex2d * sig_ptr  = data->get_data();
+
+        if (verbose){
+                vector<vector<float>> ant_coord = ant->get_elements_coordinates();
+                printf("Amplitudes:\n");
+                for (int j = 0; j < data->get_length(); ++j)
+                    for (int i = 0; i < ant->get_channels_total(); ++i )
+                        printf("%f,  ", abs((*sig_ptr)[i][j]));
+
+                printf("\n\nPhases:\n");
+                for (int j = 0; j < data->get_length(); ++j)
+                    for (int i = 0; i < ant->get_channels_total(); ++i )
+                        printf("%f,  ", arg((*sig_ptr)[i][j]));
+
+                printf("\n\nElements Coordinates:");
+                for (int i = 0; i < ant->get_channels_total(); ++i )
+                {
+                    printf("\n");
+                        for (int j = 0; j < DIM; ++j)
+                        printf("%f,  ", ant_coord[i][j]);
+                }
+
+                printf("\nSignal length:  %d\nElements total: %d\nCarrier: %e\n\n\n\n", data->get_length(), ant->get_channels_total(), data->get_carrier());
+        }
+
+
         double amp_temp;
         double phase_temp;
         int pair = 0;

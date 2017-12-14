@@ -8,8 +8,11 @@ __author__ = 'Dmitry Zhukov'
 import numpy as np
 import scipy as sp
 import siggen
-from lh import PyLh_Pel
+from pylh import PyLh_Pel
 from dtypes import PySpecFrame
+import grid
+import pyswarm
+from inter import interpolate_min
 
 
 
@@ -91,7 +94,7 @@ def arp(antenna, f0, df, fs, f_res, size, **keywords):
 
     alpha_line = np.linspace(0, 2 * np.pi, size[1], endpoint=False)
     betta_line = np.linspace(-np.pi / 2, np.pi / 2, size[0])
-    peleng = meshgrid(alpha_line, betta_line)
+    pel = meshgrid(alpha_line, betta_line)
 
     likelihood = np.zeros(size)
 
@@ -101,7 +104,7 @@ def arp(antenna, f0, df, fs, f_res, size, **keywords):
     lh = PyLh_Pel(antenna, frame)
     for i in range(size[0]):
         for j in range(size[1]):
-            likelihood[i, j] = -lh.calc(peleng[:, i, j])
+            likelihood[i, j] = -lh.calc(pel[:, i, j])
 
     return likelihood
 
@@ -194,9 +197,12 @@ def beam_width_est(**kwargs):
 class PelengEstimator:
     """ This class estimates pelengs"""
 
-    def __init__(self, antenna, f0, df, fs, f_res):
+    def __init__(self, antenna, f0, df, f_res, fs):
         beam_width = beam_width_est(antenna=antenna, f0=f0, df=df, fs=fs, f_res=f_res)
-        self.lh_size = np.array([np.ceil(np.pi / beam_width[1]) * 3, np.ceil(2 * np.pi / beam_width[0]) * 3], np.int)
+        print(np.rad2deg(beam_width))
+
+        self.peleng = grid.pypel_grid(antenna, f0, df, f_res, fs)
+        self.lh_size = self.peleng.shape[1:3]
         self.f0 = f0
         self.antenna = antenna
 
@@ -211,21 +217,39 @@ class PelengEstimator:
         peleng = np.concatenate((alpha_mat, betta_mat), axis=0)
         likelihood = np.zeros(self.lh_size)
 
-        lh_fun = Lh_Pel(signal, self.antenna, self.f0)
+        #lh_fun = PyLh_Pel(signal, self.antenna, self.f0)
+        lh_fun = PyLh_Pel(self.antenna, signal)
+
+
+        # xopt, fopt = pyswarm.pso(lh_fun.calc, [0, -np.pi/2], [2 * np.pi, np.pi/2])
+        # return  xopt
 
         for i in range(self.lh_size[0]):
             for j in range(self.lh_size[1]):
-                likelihood[i, j] = -lh_fun.calc(peleng[:, i, j])
+                likelihood[i, j] = lh_fun.calc(self.peleng[:, i, j])
 
-        max_ind = np.argmax(likelihood)
-        betta_max = max_ind % likelihood.shape[0]
-        alpha_max = max_ind % likelihood.shape[1]
-        pel_max = np.array([alpha_max, betta_max])
+        min_ind = np.argmin(likelihood)
+        alpha_ind = min_ind % likelihood.shape[1]
+        alpha_min = self.peleng[0][0][alpha_ind]
 
+        betta_ind = min_ind // likelihood.shape[1]
+        betta_min = self.peleng[1][betta_ind][0]
+        pel_min_enum = np.array([alpha_min, betta_min])
+        lh_min_enum = likelihood[betta_ind, alpha_ind]
+        print("Enumeration Estimation: ", np.rad2deg(pel_min_enum))
         # 2) Интерполяция
+        # pel_min_int, lh_min_int = interpolate_min(self.peleng, likelihood, lh_fun.calc)
+        # print("Interpolation Estimation: ", np.rad2deg(pel_min_int))
+        lh_min_int = 1
+        pel_min_int = np.array([0, 0])
+
+        if lh_min_enum < lh_min_int:
+            pel_min = pel_min_enum
+        else:
+            pel_min = pel_min_int
 
         # 3) Доуточнение
-        output = sp.optimize.minimize(lh_fun.calc, pel_max, method='Nelder-Mead')
+        output = sp.optimize.minimize(lh_fun.calc, pel_min, method='Nelder-Mead')
         return output.x
 
 

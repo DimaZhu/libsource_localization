@@ -26,13 +26,16 @@ INCLUDEPATH += /usr/include/python3.5m/\
                             /usr/include/c++/5.4.0/\
                             /usr/lib64/python3.5/site-packages/numpy/core/include/\
 
+
 SOURCES += \
     specframe.cpp \
     pelengator.cpp \
     lh_pel.cpp \
     dtypes.cpp \
     antenna.cpp \
-    grid.cpp
+    grid.cpp \
+    interpolator.cpp \
+    lh.cpp
 
 HEADERS += \
     antenna.h \
@@ -40,7 +43,9 @@ HEADERS += \
     lh_pel.h \
     pelengator.h \
     source_localization_global.h \
-    specframe.h
+    specframe.h \
+    interpolator.h \
+    lh.h
 
 unix {
     target.path = /usr/lib
