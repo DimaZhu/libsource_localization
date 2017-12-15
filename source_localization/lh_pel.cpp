@@ -9,7 +9,7 @@ Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data)
         complex2d * sig_ptr  = data->get_data();
 
         if (verbose){
-                vector<vector<float>> ant_coord = ant->get_elements_coordinates();
+                vector<vector<float>> ant_coord = ant->get_elements();
                 printf("Amplitudes:\n");
                 for (int j = 0; j < data->get_length(); ++j)
                     for (int i = 0; i < ant->get_channels_total(); ++i )
@@ -61,7 +61,7 @@ Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data)
                 lh_max +=mutual_amp[pair];
 
                 std::vector<float> buffer;
-                std::vector< std::vector <float>> antenna_coordinates = ant->get_elements_coordinates();
+                std::vector< std::vector <float>> antenna_coordinates = ant->get_elements();
                 for (int d = 0; d < DIM; ++d)
                     buffer.push_back(antenna_coordinates[m][d] - antenna_coordinates[l][d]);
                  coord_delta.push_back(buffer);

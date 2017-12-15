@@ -32,19 +32,19 @@ public:
     friend bool operator!=(const Antenna &antenna1, const Antenna &antenna2) { return !(antenna1 == antenna2);}
 
         //seters
-    void set_model_coordinates(vector< vector< float>> coordinates);
-    void set_base_coordinates(vector< float>  coordinates);
-    void set_model_name(QString i_model);
+    void set_model(vector< vector< float>> coordinates);
+    void set_base(vector< float>  coordinates);
+    void set_name(QString i_name);
     void set_orientation(float i_orientation);
 
         //geters
-    vector< vector< float>> get_model_coordinates() const;
-    vector< vector< float>> get_elements_coordinates() const;
-    vector<float> get_base_coordinates() const;
+    vector< vector< float>> get_model() const;
+    vector< vector< float>> get_elements() const;
+    vector<float> get_base() const;
 
     vector<float> get_elements_on_stages() const;
     float get_orientation() const;
-    QString get_model_name() const;
+    QString get_name() const;
     int get_channels_total() const;
 
     bool adjust_elements_coordinates(vector<vector<float> > coorection);
@@ -59,13 +59,13 @@ private:
     void calculate_stages_number();
     void calculate_elements_coordinates();
 
-    vector< vector< float>> modelCoordinates;
-    vector< vector< float>> elementsCoordinates;
-    vector< float>  baseCoordinates;
+    vector< vector< float>> model;
+    vector< vector< float>> elements;
+    vector< float>  base;
     vector< float>  elementsOnStages;
     float orientation;
 
-    QString  model;
+    QString  name;
 };
 
 #endif // ANTENNA_H

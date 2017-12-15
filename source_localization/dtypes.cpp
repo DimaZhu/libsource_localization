@@ -2132,7 +2132,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_8set_model(struct __pyx_obj_6dtypes
  *             self.c_ant = new Antenna()
  * 
  *         cdef vector[vector[float]] c_coord = coord             # <<<<<<<<<<<<<<
- *         self.c_ant.set_model_coordinates(c_coord)
+ *         self.c_ant.set_model(c_coord)
  * 
  */
   __pyx_t_3 = __pyx_convert_vector_from_py_std_3a__3a_vector_3c_float_3e___(__pyx_v_coord); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 34, __pyx_L1_error)
@@ -2141,11 +2141,11 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_8set_model(struct __pyx_obj_6dtypes
   /* "dtypes.pyx":35
  * 
  *         cdef vector[vector[float]] c_coord = coord
- *         self.c_ant.set_model_coordinates(c_coord)             # <<<<<<<<<<<<<<
+ *         self.c_ant.set_model(c_coord)             # <<<<<<<<<<<<<<
  * 
  *     def set_base(self, coord):
  */
-  __pyx_v_self->c_ant->set_model_coordinates(__pyx_v_c_coord);
+  __pyx_v_self->c_ant->set_model(__pyx_v_c_coord);
 
   /* "dtypes.pyx":29
  *             del self.c_ant
@@ -2168,7 +2168,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_8set_model(struct __pyx_obj_6dtypes
 }
 
 /* "dtypes.pyx":37
- *         self.c_ant.set_model_coordinates(c_coord)
+ *         self.c_ant.set_model(c_coord)
  * 
  *     def set_base(self, coord):             # <<<<<<<<<<<<<<
  * 
@@ -2235,7 +2235,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_10set_base(struct __pyx_obj_6dtypes
  *             self.c_ant = new Antenna()
  * 
  *         cdef vector[float] c_coord = coord             # <<<<<<<<<<<<<<
- *         self.c_ant.set_base_coordinates(c_coord)
+ *         self.c_ant.set_base(c_coord)
  * 
  */
   __pyx_t_3 = __pyx_convert_vector_from_py_float(__pyx_v_coord); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L1_error)
@@ -2244,14 +2244,14 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_10set_base(struct __pyx_obj_6dtypes
   /* "dtypes.pyx":43
  * 
  *         cdef vector[float] c_coord = coord
- *         self.c_ant.set_base_coordinates(c_coord)             # <<<<<<<<<<<<<<
+ *         self.c_ant.set_base(c_coord)             # <<<<<<<<<<<<<<
  * 
  *     def set_orientation(self, float val):
  */
-  __pyx_v_self->c_ant->set_base_coordinates(__pyx_v_c_coord);
+  __pyx_v_self->c_ant->set_base(__pyx_v_c_coord);
 
   /* "dtypes.pyx":37
- *         self.c_ant.set_model_coordinates(c_coord)
+ *         self.c_ant.set_model(c_coord)
  * 
  *     def set_base(self, coord):             # <<<<<<<<<<<<<<
  * 
@@ -2271,7 +2271,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_10set_base(struct __pyx_obj_6dtypes
 }
 
 /* "dtypes.pyx":45
- *         self.c_ant.set_base_coordinates(c_coord)
+ *         self.c_ant.set_base(c_coord)
  * 
  *     def set_orientation(self, float val):             # <<<<<<<<<<<<<<
  * 
@@ -2352,7 +2352,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_12set_orientation(struct __pyx_obj_
   __pyx_v_self->c_ant->set_orientation(__pyx_v_val);
 
   /* "dtypes.pyx":45
- *         self.c_ant.set_base_coordinates(c_coord)
+ *         self.c_ant.set_base(c_coord)
  * 
  *     def set_orientation(self, float val):             # <<<<<<<<<<<<<<
  * 
@@ -2420,7 +2420,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_14get_model(struct __pyx_obj_6dtype
  *         if self.c_ant is NULL:
  *             return None             # <<<<<<<<<<<<<<
  * 
- *         el_list = self.c_ant.get_model_coordinates()
+ *         el_list = self.c_ant.get_model()
  */
     __Pyx_XDECREF(__pyx_r);
     __Pyx_INCREF(Py_None);
@@ -2439,15 +2439,15 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_14get_model(struct __pyx_obj_6dtype
   /* "dtypes.pyx":57
  *             return None
  * 
- *         el_list = self.c_ant.get_model_coordinates()             # <<<<<<<<<<<<<<
+ *         el_list = self.c_ant.get_model()             # <<<<<<<<<<<<<<
  *         el_arr = np.asarray(el_list)
  *         return el_arr
  */
-  __pyx_v_el_list = __pyx_v_self->c_ant->get_model_coordinates();
+  __pyx_v_el_list = __pyx_v_self->c_ant->get_model();
 
   /* "dtypes.pyx":58
  * 
- *         el_list = self.c_ant.get_model_coordinates()
+ *         el_list = self.c_ant.get_model()
  *         el_arr = np.asarray(el_list)             # <<<<<<<<<<<<<<
  *         return el_arr
  * 
@@ -2509,7 +2509,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_14get_model(struct __pyx_obj_6dtype
   __pyx_t_2 = 0;
 
   /* "dtypes.pyx":59
- *         el_list = self.c_ant.get_model_coordinates()
+ *         el_list = self.c_ant.get_model()
  *         el_arr = np.asarray(el_list)
  *         return el_arr             # <<<<<<<<<<<<<<
  * 
@@ -2593,7 +2593,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_16get_elements(struct __pyx_obj_6dt
  *         if self.c_ant is NULL:
  *             return None             # <<<<<<<<<<<<<<
  * 
- *         el_list = self.c_ant.get_elements_coordinates()
+ *         el_list = self.c_ant.get_elements()
  */
     __Pyx_XDECREF(__pyx_r);
     __Pyx_INCREF(Py_None);
@@ -2612,15 +2612,15 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_16get_elements(struct __pyx_obj_6dt
   /* "dtypes.pyx":66
  *             return None
  * 
- *         el_list = self.c_ant.get_elements_coordinates()             # <<<<<<<<<<<<<<
+ *         el_list = self.c_ant.get_elements()             # <<<<<<<<<<<<<<
  *         el_arr = np.asarray(el_list)
  *         return el_arr
  */
-  __pyx_v_el_list = __pyx_v_self->c_ant->get_elements_coordinates();
+  __pyx_v_el_list = __pyx_v_self->c_ant->get_elements();
 
   /* "dtypes.pyx":67
  * 
- *         el_list = self.c_ant.get_elements_coordinates()
+ *         el_list = self.c_ant.get_elements()
  *         el_arr = np.asarray(el_list)             # <<<<<<<<<<<<<<
  *         return el_arr
  * 
@@ -2682,7 +2682,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_16get_elements(struct __pyx_obj_6dt
   __pyx_t_2 = 0;
 
   /* "dtypes.pyx":68
- *         el_list = self.c_ant.get_elements_coordinates()
+ *         el_list = self.c_ant.get_elements()
  *         el_arr = np.asarray(el_list)
  *         return el_arr             # <<<<<<<<<<<<<<
  * 
@@ -2760,7 +2760,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_18get_base(struct __pyx_obj_6dtypes
  *         if self.c_ant is NULL:
  *             return None             # <<<<<<<<<<<<<<
  * 
- *         return self.c_ant.get_base_coordinates()
+ *         return self.c_ant.get_base()
  */
     __Pyx_XDECREF(__pyx_r);
     __Pyx_INCREF(Py_None);
@@ -2779,12 +2779,12 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_18get_base(struct __pyx_obj_6dtypes
   /* "dtypes.pyx":75
  *             return None
  * 
- *         return self.c_ant.get_base_coordinates()             # <<<<<<<<<<<<<<
+ *         return self.c_ant.get_base()             # <<<<<<<<<<<<<<
  * 
  *     def get_stages(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __pyx_convert_vector_to_py_float(__pyx_v_self->c_ant->get_base_coordinates()); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 75, __pyx_L1_error)
+  __pyx_t_2 = __pyx_convert_vector_to_py_float(__pyx_v_self->c_ant->get_base()); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 75, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
@@ -2810,7 +2810,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_18get_base(struct __pyx_obj_6dtypes
 }
 
 /* "dtypes.pyx":77
- *         return self.c_ant.get_base_coordinates()
+ *         return self.c_ant.get_base()
  * 
  *     def get_stages(self):             # <<<<<<<<<<<<<<
  * 
@@ -2883,7 +2883,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_20get_stages(struct __pyx_obj_6dtyp
   goto __pyx_L0;
 
   /* "dtypes.pyx":77
- *         return self.c_ant.get_base_coordinates()
+ *         return self.c_ant.get_base()
  * 
  *     def get_stages(self):             # <<<<<<<<<<<<<<
  * 
@@ -3182,7 +3182,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_26show(struct __pyx_obj_6dtypes_PyA
  *         if self.c_ant is NULL:
  *             return None             # <<<<<<<<<<<<<<
  * 
- *         cart_coord = np.asarray(self.c_ant.get_elements_coordinates())
+ *         cart_coord = np.asarray(self.c_ant.get_elements())
  */
     __Pyx_XDECREF(__pyx_r);
     __Pyx_INCREF(Py_None);
@@ -3201,7 +3201,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_26show(struct __pyx_obj_6dtypes_PyA
   /* "dtypes.pyx":107
  *             return None
  * 
- *         cart_coord = np.asarray(self.c_ant.get_elements_coordinates())             # <<<<<<<<<<<<<<
+ *         cart_coord = np.asarray(self.c_ant.get_elements())             # <<<<<<<<<<<<<<
  *         color = 'green'
  *         elements = go.Scatter3d(x=cart_coord[0, :],
  */
@@ -3210,7 +3210,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_26show(struct __pyx_obj_6dtypes_PyA
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_asarray); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 107, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __pyx_convert_vector_to_py_std_3a__3a_vector_3c_float_3e___(__pyx_v_self->c_ant->get_elements_coordinates()); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __pyx_t_2 = __pyx_convert_vector_to_py_std_3a__3a_vector_3c_float_3e___(__pyx_v_self->c_ant->get_elements()); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 107, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_5 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_4))) {
@@ -3263,7 +3263,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_26show(struct __pyx_obj_6dtypes_PyA
 
   /* "dtypes.pyx":108
  * 
- *         cart_coord = np.asarray(self.c_ant.get_elements_coordinates())
+ *         cart_coord = np.asarray(self.c_ant.get_elements())
  *         color = 'green'             # <<<<<<<<<<<<<<
  *         elements = go.Scatter3d(x=cart_coord[0, :],
  *                                 y=cart_coord[1, :],
@@ -3272,7 +3272,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_26show(struct __pyx_obj_6dtypes_PyA
   __pyx_v_color = __pyx_n_s_green;
 
   /* "dtypes.pyx":109
- *         cart_coord = np.asarray(self.c_ant.get_elements_coordinates())
+ *         cart_coord = np.asarray(self.c_ant.get_elements())
  *         color = 'green'
  *         elements = go.Scatter3d(x=cart_coord[0, :],             # <<<<<<<<<<<<<<
  *                                 y=cart_coord[1, :],
@@ -3333,7 +3333,7 @@ static PyObject *__pyx_pf_6dtypes_9PyAntenna_26show(struct __pyx_obj_6dtypes_PyA
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
   /* "dtypes.pyx":109
- *         cart_coord = np.asarray(self.c_ant.get_elements_coordinates())
+ *         cart_coord = np.asarray(self.c_ant.get_elements())
  *         color = 'green'
  *         elements = go.Scatter3d(x=cart_coord[0, :],             # <<<<<<<<<<<<<<
  *                                 y=cart_coord[1, :],
@@ -8745,7 +8745,7 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple_);
 
   /* "dtypes.pyx":109
- *         cart_coord = np.asarray(self.c_ant.get_elements_coordinates())
+ *         cart_coord = np.asarray(self.c_ant.get_elements())
  *         color = 'green'
  *         elements = go.Scatter3d(x=cart_coord[0, :],             # <<<<<<<<<<<<<<
  *                                 y=cart_coord[1, :],

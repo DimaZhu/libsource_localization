@@ -20,7 +20,7 @@ void Pelengator::set_signal_param(double f0, double df, double f_res, double fs)
         printf("__Setting signal parameters in pelengator__\n");
     #endif
 
-    vector<vector<float>> ant_coord = antenna.get_model_coordinates();
+    vector<vector<float>> ant_coord = antenna.get_model();
     coord_grid = pel_grid(ant_coord, f0, df, f_res, fs);
     if (coord_grid.empty()) {
        throw std::runtime_error("Empty coordinate grid. Can't estimate position");

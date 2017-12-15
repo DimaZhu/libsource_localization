@@ -32,7 +32,7 @@ cdef class PyAntenna:
             self.c_ant = new Antenna()
 
         cdef vector[vector[float]] c_coord = coord
-        self.c_ant.set_model_coordinates(c_coord)
+        self.c_ant.set_model(c_coord)
 
     def set_base(self, coord):
 
@@ -40,7 +40,7 @@ cdef class PyAntenna:
             self.c_ant = new Antenna()
 
         cdef vector[float] c_coord = coord
-        self.c_ant.set_base_coordinates(c_coord)
+        self.c_ant.set_base(c_coord)
 
     def set_orientation(self, float val):
 
@@ -54,7 +54,7 @@ cdef class PyAntenna:
         if self.c_ant is NULL:
             return None
 
-        el_list = self.c_ant.get_model_coordinates()
+        el_list = self.c_ant.get_model()
         el_arr = np.asarray(el_list)
         return el_arr
 
@@ -63,7 +63,7 @@ cdef class PyAntenna:
         if self.c_ant is NULL:
             return None
 
-        el_list = self.c_ant.get_elements_coordinates()
+        el_list = self.c_ant.get_elements()
         el_arr = np.asarray(el_list)
         return el_arr
 
@@ -72,7 +72,7 @@ cdef class PyAntenna:
         if self.c_ant is NULL:
             return None
 
-        return self.c_ant.get_base_coordinates()
+        return self.c_ant.get_base()
 
     def get_stages(self):
 
@@ -104,7 +104,7 @@ cdef class PyAntenna:
         if self.c_ant is NULL:
             return None
 
-        cart_coord = np.asarray(self.c_ant.get_elements_coordinates())
+        cart_coord = np.asarray(self.c_ant.get_elements())
         color = 'green'
         elements = go.Scatter3d(x=cart_coord[0, :],
                                 y=cart_coord[1, :],

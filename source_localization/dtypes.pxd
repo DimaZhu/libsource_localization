@@ -10,14 +10,14 @@ cdef extern from "antenna.h" nogil:
         Antenna(const Antenna &antenna)
 
         # seters
-        void set_model_coordinates(vector[ vector[float]] coordinates)
-        void set_base_coordinates(vector[float]  coordinates)
+        void set_model(vector[ vector[float]] coordinates)
+        void set_base(vector[float]  coordinates)
         void set_orientation(float i_orientation)
 
         # geters
-        vector[vector[float]] get_model_coordinates() const
-        vector[vector[float]] get_elements_coordinates() const
-        vector[float] get_base_coordinates() const
+        vector[vector[float]] get_model() const
+        vector[vector[float]] get_elements() const
+        vector[float] get_base() const
 
         vector[float] get_elements_on_stages() const
         float get_orientation() const
