@@ -1,6 +1,7 @@
 #include "specframe.h"
 
 SpecFrame::SpecFrame():
+    QObject(),
     f0(NAN),
     sampling_frequency(NAN),
     freq_resolution(NAN),
@@ -12,6 +13,7 @@ SpecFrame::SpecFrame():
 }
 
 SpecFrame::SpecFrame(const SpecFrame &frame):
+    QObject(),
     f0(frame.get_carrier()),
     sampling_frequency(frame.get_sampling_frequency()),
     freq_resolution(frame.get_frequency_resolution()),
@@ -79,10 +81,17 @@ complex2d SpecFrame::get_data(int ch_start, int ch_stop, int samp_start, int sam
 
 }
 
-void SpecFrame::push_back(int ch, int length, complex<double> *extra_data)
+void SpecFrame::push_back(int channels_total, int samp_in_channel, complex<double> **extra_data)
 {
-    for (int i = 0; i < length; ++i)
-        data[ch].push_back(extra_data[i]);
+    for (int ch = 0; ch < channels_total; ++ch)
+    {
+        vector<complex<double>> channel;
+        for (int samp = 0; samp < samp_in_channel; ++samp)
+        {
+            channel.push_back(extra_data[ch][samp]);
+        }
+        data.push_back(channel);
+    }
 }
 
 void SpecFrame::set_data(complex2d data)
@@ -225,5 +234,9 @@ int SpecFrame::get_bound() const
     return boundInd;
 }
 
+void SpecFrame::close()
+{
+    emit closed();
+}
 
 

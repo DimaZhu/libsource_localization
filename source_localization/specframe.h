@@ -2,6 +2,7 @@
 #define SPECFRAME_H
 
 #include <QtGlobal>
+#include <QObject>
 #include <cstring>
 #include <complex>
 #include <vector>
@@ -9,9 +10,11 @@
 
 using namespace std;
 typedef  vector<vector<complex<double>>> complex2d;
+typedef vector<complex<double>> complex1d;
 
-class SpecFrame
+class SpecFrame : public QObject
 {
+    Q_OBJECT
 
 public:
     SpecFrame();
@@ -21,11 +24,13 @@ public:
     complex2d *get_data();
     complex2d get_data(int samp_start, int samp_stop) const;
     complex2d get_data(int ch_start, int ch_stop, int samp_start, int samp_stop) const;
-    void push_back(int ch, int length, complex<double> * data);
+    void push_back(int channels_total, int samp_in_channel, complex<double> **data);
     void set_data(complex2d data);
 
     void clear();
+    void close();
 
+    //Пересчитвает нужный отсчет в индекс кадра
     int ind(int samp) const;
 
     bool is_band_limited() const; //Включен ли режим ограниченной полосы
@@ -57,6 +62,8 @@ public:
     void set_bound(int bound);
     int get_bound() const;
 
+signals:
+    void closed();
 
 private:
     complex2d data;
