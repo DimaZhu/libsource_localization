@@ -214,7 +214,7 @@ int SpecFrame::get_post_id() const
 
 void SpecFrame::set_count(int val)
 {
-    Q_ASSERT(val > 0);
+    Q_ASSERT(val >= 0);
     count = val;
 }
 
@@ -225,7 +225,7 @@ int SpecFrame::get_count() const
 
 void SpecFrame::set_bound(int bound)
 {
-    Q_ASSERT(bound > 0);
+    Q_ASSERT(bound >= 0);
     boundInd = bound;
 }
 
@@ -234,9 +234,9 @@ int SpecFrame::get_bound() const
     return boundInd;
 }
 
-void SpecFrame::close()
+void SpecFrame::erase()
 {
-    emit closed();
+    emit erased(count);
 }
 
 

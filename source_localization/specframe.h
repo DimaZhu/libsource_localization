@@ -15,7 +15,6 @@ typedef vector<complex<double>> complex1d;
 class SpecFrame : public QObject
 {
     Q_OBJECT
-
 public:
     SpecFrame();
     SpecFrame(const SpecFrame &frame);
@@ -28,7 +27,7 @@ public:
     void set_data(complex2d data);
 
     void clear();
-    void close();
+    void erase();
 
     //Пересчитвает нужный отсчет в индекс кадра
     int ind(int samp) const;
@@ -63,7 +62,7 @@ public:
     int get_bound() const;
 
 signals:
-    void closed();
+    void erased(int);
 
 private:
     complex2d data;
