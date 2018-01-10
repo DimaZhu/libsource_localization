@@ -1,11 +1,13 @@
 #ifndef SPECFRAME_H
 #define SPECFRAME_H
 
+#include <QDebug>
 #include <QtGlobal>
 #include <QObject>
 #include <cstring>
 #include <complex>
 #include <vector>
+#include <profiler.h>
 
 
 using namespace std;
@@ -60,6 +62,8 @@ public:
 
     void set_bound(int bound);
     int get_bound() const;
+
+    Profiler profiler;
 
 signals:
     void erased(int);

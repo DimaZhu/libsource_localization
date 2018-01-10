@@ -8,6 +8,7 @@ QT       -= gui
 
 TARGET = source_localization
 TEMPLATE = lib
+CONFIG += c++11
 
 DEFINES += SOURCE_LOCALIZATION2_LIBRARY
 
@@ -36,7 +37,8 @@ SOURCES += \
     antenna.cpp \
     grid.cpp \
     interpolator.cpp \
-    lh.cpp
+    lh.cpp \
+    profiler.cpp
 
 HEADERS += \
     antenna.h \
@@ -46,7 +48,8 @@ HEADERS += \
     source_localization_global.h \
     specframe.h \
     interpolator.h \
-    lh.h
+    lh.h \
+    profiler.h
 
 unix {
     target.path = /usr/lib

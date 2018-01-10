@@ -85,7 +85,7 @@ void SpecFrame::push_back(int channels_total, int samp_in_channel, complex<doubl
 {
     for (int ch = 0; ch < channels_total; ++ch)
     {
-        vector<complex<double>> channel;
+        complex1d channel;
         for (int samp = 0; samp < samp_in_channel; ++samp)
         {
             channel.push_back(extra_data[ch][samp]);
@@ -203,7 +203,7 @@ int SpecFrame::get_full_frame_length() const
 
 void SpecFrame::set_post_id(int id)
 {
-    Q_ASSERT(id > 0);
+    Q_ASSERT(id >= 0);
     postId = id;
 }
 
