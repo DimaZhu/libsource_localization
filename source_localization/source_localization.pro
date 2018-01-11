@@ -38,7 +38,9 @@ SOURCES += \
     grid.cpp \
     interpolator.cpp \
     lh.cpp \
-    profiler.cpp
+    profiler.cpp \
+    profile.cpp \
+    profile_analizer.cpp
 
 HEADERS += \
     antenna.h \
@@ -49,7 +51,9 @@ HEADERS += \
     specframe.h \
     interpolator.h \
     lh.h \
-    profiler.h
+    profiler.h \
+    profile.h \
+    profile_analizer.h
 
 unix {
     target.path = /usr/lib

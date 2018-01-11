@@ -3,6 +3,8 @@
 
 #include <QMap>
 #include <chrono>
+#include <profile.h>
+
 
 class Profiler
 {
@@ -10,11 +12,11 @@ public:
     Profiler();
     void start(QString name);
     void stop(QString name);
-    QMap<QString, int> get_statistic();
+    Profile get_profile();
 
 
 private:
-    QMap<QString, int> stat;
+    Profile profile;
     std::chrono::time_point<std::chrono::steady_clock> begin;
     QString currentName;
 };
