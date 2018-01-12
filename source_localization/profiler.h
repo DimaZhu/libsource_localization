@@ -6,12 +6,15 @@
 #include <profile.h>
 
 
+using namespace std;
+using ns = std::chrono::nanoseconds;
 class Profiler
 {
 public:
     Profiler();
     void start(QString name);
     void stop(QString name);
+    void clear();
     Profile get_profile();
 
 

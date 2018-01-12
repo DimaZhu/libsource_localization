@@ -8,11 +8,14 @@
 #include <complex>
 #include <vector>
 #include <profiler.h>
-
+#include <deque>
 
 using namespace std;
-typedef  vector<vector<complex<double>>> complex2d;
-typedef vector<complex<double>> complex1d;
+typedef  deque<deque<complex<double>>> complex2d;
+typedef deque<complex<double>> complex1d;
+
+//typedef  QVector<QVector<complex<double>>> complex2d;
+//typedef QVector<complex<double>> complex1d;
 
 class SpecFrame : public QObject
 {

@@ -1,7 +1,12 @@
 from libcpp cimport bool
 from libcpp.vector cimport vector
+from libcpp.deque cimport deque
 
-ctypedef  vector[vector[complex]] complex2d;
+import numpy as np
+cimport numpy as np
+
+ctypedef  deque[deque[complex]] complex2d;
+ctypedef  deque[complex] complex1d;
 
 cdef extern from "antenna.h" nogil:
     cdef cppclass Antenna:
@@ -82,5 +87,7 @@ cdef extern from "specframe.h" nogil:
 
 cdef class PySpecFrame:
     cdef SpecFrame *c_frame
+    cdef complex2d convert_python_data(self, np.ndarray[np.complex128_t, ndim=2] data)
+    cdef np.ndarray[np.complex128_t, ndim=2] data_convert_c_data(self, complex2d c_data)
 
 cdef SpecFrame *SpecFrame_factory(PySpecFrame frame)

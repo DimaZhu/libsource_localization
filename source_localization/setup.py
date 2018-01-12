@@ -10,7 +10,7 @@ dtypes = Extension(
     extra_compile_args=['-std=gnu++11'],
     library_dirs=['/usr/lib64/'],
     libraries=["QtCore"],
-    include_dirs=['/usr/include', '/usr/include/QtCore/',  numpy.get_include(), './dlib/', './'],
+    include_dirs=[numpy.get_include(), '/usr/include', '/usr/include/QtCore/', './dlib/', './'],
 )
 
 
@@ -31,7 +31,7 @@ lh = Extension(
     extra_compile_args=['-std=gnu++11'],
     library_dirs=['/usr/lib64/'],
     libraries=["QtCore"],
-    include_dirs=['./dlib/', '/usr/include/QtCore/', './'],
+    include_dirs=[numpy.get_include(), './dlib/', '/usr/include/QtCore/', './'],
 )
 
 

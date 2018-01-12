@@ -71,9 +71,9 @@ complex2d SpecFrame::get_data(int ch_start, int ch_stop, int samp_start, int sam
     complex2d output;
     for (int ch = ch_start; ch <= ch_stop; ++ch)
     {
-        vector<complex<double>>::const_iterator first = data[ch].begin() + samp_start;
-        vector<complex<double>>::const_iterator last = data[ch].begin() + samp_stop;
-        vector<complex<double>> buffer(first, last);
+        complex1d::const_iterator first = data[ch].begin() + samp_start;
+        complex1d::const_iterator last = data[ch].begin() + samp_stop;
+        complex1d buffer(first, last);
         output.push_back(buffer);
     }
 
@@ -109,6 +109,8 @@ void SpecFrame::clear()
     count = -1;
     boundInd = 0;
     data.clear();
+
+    profiler.clear();
 
 }
 

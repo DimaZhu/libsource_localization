@@ -16,16 +16,17 @@ void Profiler::stop(QString name)
     if (currentName != name)
         return;
 
-    auto duration = std::chrono::duration_cast< std::chrono::milliseconds>
-                              (std::chrono::steady_clock::now() - begin);
+    auto end = std::chrono::steady_clock::now();
+    auto diff = end - begin;
 
 
     bool new_entity = true;
 
-    for (auto entity : profile){
-        if (entity.name == currentName) {
+    for (uint i = 0; i < profile.size(); ++i){
+        if (profile[i].name == currentName) {
             new_entity = false;
-            entity.time_total += duration.count();
+
+            profile[i].time_total += chrono::duration_cast<ns>(diff).count();
             break;
         }
     }
@@ -33,7 +34,7 @@ void Profiler::stop(QString name)
     if (new_entity) {
         Profile_entity entity;
         entity.name = currentName;
-        entity.time_total = duration.count();
+        entity.time_total = chrono::duration_cast<ns>(diff).count();
         profile.push_back(entity);
     }
 
@@ -42,4 +43,10 @@ void Profiler::stop(QString name)
 Profile Profiler::get_profile()
 {
     return profile;
+}
+
+
+void Profiler::clear()
+{
+    profile.clear();
 }

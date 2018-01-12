@@ -1,8 +1,7 @@
 #defining NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 from dtypes cimport *
 
-import numpy as np
-cimport numpy as np
+
 from libcpp.vector cimport vector
 np.import_array()
 
@@ -155,6 +154,7 @@ cdef class PySpecFrame:
             del self.c_frame
 
     def initialize(self, **kw):
+        cdef complex2d c_data
 
         if "f0" in kw:
             self.c_frame.set_carrier(kw['f0'])
@@ -166,12 +166,37 @@ cdef class PySpecFrame:
             self.c_frame.set_frequency_resolution(kw['f_res'])
 
         if 'sig' in kw:
-            sig_list = kw['sig'].tolist()
-            self.c_frame.set_data(sig_list)
+            # sig_list = kw['sig'].tolist()
+            sig = kw['sig']
+            c_data = self.convert_python_data(sig)
+            self.c_frame.set_data(c_data)
+
+
+    cdef complex2d convert_python_data(self, np.ndarray [np.complex128_t, ndim=2] data):
+        cdef complex2d data2d
+        cdef complex1d data1d
+        for i in range(len(data)):
+            data1d.clear()
+            for j in range(len(data[i])):
+                data1d.push_back(data[i, j])
+            data2d.push_back(data1d)
+
+        return data2d
+
+    cdef np.ndarray[np.complex128_t, ndim=2] data_convert_c_data(self, complex2d data):
+        cdef int channels_total =  data.size()
+        cdef int samp_per_channel = data[0].size()
+        output = np.zeros(shape=(channels_total, samp_per_channel))
+        for i in range(channels_total):
+            for j in range(samp_per_channel):
+                output[i, j] = data[i][j]
+
+        return output
+
 
     def get_data(self):
-        data = np.asarray(self.c_frame.get_data(0, self.c_frame.get_channels_total(), 0, self.c_frame.get_length()))
-        return data
+        cdef complex2d c_data = self.c_frame.get_data(0, self.c_frame.get_channels_total(), 0, self.c_frame.get_length())
+        return self.data_convert_c_data(c_data)
 
     def get_carrier(self):
         return self.c_frame.get_carrier()
@@ -183,8 +208,8 @@ cdef class PySpecFrame:
         return self.c_frame.get_frequency_resolution()
 
     def set_data(self, data):
-        data_list = data.tolist()
-        self.c_frame.set_data(data_list)
+        cdef complex2d c_data = self.convert_python_data(data)
+        self.c_frame.set_data(c_data)
 
     def set_carrier(self, f0):
         self.c_frame.set_carrier(f0)
