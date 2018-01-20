@@ -116,7 +116,7 @@ void SpecFrame::clear()
 
 int SpecFrame::ind(int samp) const
 {
-    Q_ASSERT(samp > 0);
+    Q_ASSERT(samp >= 0);
     samp -= boundInd;
     return samp;
 }
