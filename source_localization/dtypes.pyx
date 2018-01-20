@@ -3,6 +3,9 @@ from dtypes cimport *
 
 
 from libcpp.vector cimport vector
+from libc.stdlib cimport malloc, free
+from cython.operator cimport dereference, address
+
 np.import_array()
 
 cdef class PyAntenna:
@@ -146,8 +149,8 @@ cdef Antenna *Antenna_factory(PyAntenna ant):
     return a
 
 cdef class PySpecFrame:
-    def __cinit__(self):
-        self.c_frame = new SpecFrame()
+    def __cinit__(self, channels_total, samp_per_ch):
+        self.c_frame = new SpecFrame(channels_total, samp_per_ch)
 
     def __dealoc__(self):
         if self.c_frame is not NULL:
@@ -168,24 +171,32 @@ cdef class PySpecFrame:
         if 'sig' in kw:
             # sig_list = kw['sig'].tolist()
             sig = kw['sig']
-            c_data = self.convert_python_data(sig)
-            self.c_frame.set_data(c_data)
+            self.convert_python_data(sig)
 
 
-    cdef complex2d convert_python_data(self, np.ndarray [np.complex128_t, ndim=2] data):
-        cdef complex2d data2d
-        cdef complex1d data1d
-        for i in range(len(data)):
-            data1d.clear()
-            for j in range(len(data[i])):
-                data1d.push_back(data[i, j])
-            data2d.push_back(data1d)
+    cdef void set_python_data(self, np.ndarray [np.complex128_t, ndim=2] data):
 
-        return data2d
+        cdef int channels_total = len(data)
+        cdef int samp_per_ch = len(data[0])
+        cdef complex2d c_data
 
-    cdef np.ndarray[np.complex128_t, ndim=2] data_convert_c_data(self, complex2d data):
-        cdef int channels_total =  data.size()
-        cdef int samp_per_channel = data[0].size()
+        c_data = <complex2d > malloc( channels_total * sizeof(complex1d))
+        for ch in range(channels_total):
+            c_data[ch] = <complex1d> malloc(samp_per_ch * sizeof(complex))
+
+
+        for ch in range(channels_total):
+            for s in range(samp_per_ch):
+                c_data[ch][s] = data[ch, s]
+
+        self.c_frame.set_data(address(c_data), channels_total, samp_per_ch)
+
+    cdef np.ndarray[np.complex128_t, ndim=2] get_python_data(self):
+        cdef int channels_total =  self.c_frame.get_channels_total()
+        cdef int samp_per_channel = self.c_frame.get_length()
+        cdef complex2d * data_ptr = self.c_frame.get_data()
+        cdef complex2d data = dereference(data_ptr)
+
         output = np.zeros(shape=(channels_total, samp_per_channel))
         for i in range(channels_total):
             for j in range(samp_per_channel):
@@ -195,8 +206,7 @@ cdef class PySpecFrame:
 
 
     def get_data(self):
-        cdef complex2d c_data = self.c_frame.get_data(0, self.c_frame.get_channels_total(), 0, self.c_frame.get_length())
-        return self.data_convert_c_data(c_data)
+        return self.get_python_data()
 
     def get_carrier(self):
         return self.c_frame.get_carrier()
@@ -208,8 +218,7 @@ cdef class PySpecFrame:
         return self.c_frame.get_frequency_resolution()
 
     def set_data(self, data):
-        cdef complex2d c_data = self.convert_python_data(data)
-        self.c_frame.set_data(c_data)
+        self.set_python_data(data)
 
     def set_carrier(self, f0):
         self.c_frame.set_carrier(f0)
@@ -219,6 +228,7 @@ cdef class PySpecFrame:
 
     def set_frequency_resolution(self, f_res):
         self.c_frame.set_frequency_resolution(f_res)
+
 
 
 

@@ -1,7 +1,9 @@
 #include "specframe.h"
 
-SpecFrame::SpecFrame():
+SpecFrame::SpecFrame(int i_channels_total, int i_samp_per_ch):
     QObject(),
+    channels_total(i_channels_total),
+    samp_per_channel(i_samp_per_ch),
     f0(NAN),
     sampling_frequency(NAN),
     freq_resolution(NAN),
@@ -9,11 +11,13 @@ SpecFrame::SpecFrame():
     count(-1),
     boundInd(0)
 {
-
+    allocate_memory();
 }
 
-SpecFrame::SpecFrame(const SpecFrame &frame):
+SpecFrame::SpecFrame(SpecFrame &frame):
     QObject(),
+    channels_total(frame.get_channels_total()),
+    samp_per_channel(frame.get_length()),
     f0(frame.get_carrier()),
     sampling_frequency(frame.get_sampling_frequency()),
     freq_resolution(frame.get_frequency_resolution()),
@@ -21,23 +25,69 @@ SpecFrame::SpecFrame(const SpecFrame &frame):
     count(frame.get_count()),
     boundInd(frame.get_bound())
 {
-    data = frame.get_data(0, frame.get_channels_total() - 1, boundInd, boundInd + frame.get_length());
+    free_memory();
+    allocate_memory();
+
+    complex2d * new_data_ptr = frame.get_data();
+    complex2d new_data = *new_data_ptr;
+
+    for (int ch = 0; ch < channels_total; ++ch)
+        for (int s = 0; s < samp_per_channel; ++s)
+            data[ch][s] = new_data[ch][s];
+
 }
 
-const SpecFrame &SpecFrame::operator =(const SpecFrame &frame)
+SpecFrame::~SpecFrame()
+{
+    free_memory();
+}
+
+const SpecFrame &SpecFrame::operator =(SpecFrame &frame)
 {
     // Избегать самоприсваивания
     if (&frame != this) {
 
+        channels_total = frame.get_channels_total();
+        samp_per_channel = frame.get_length();
         f0 = frame.get_carrier();
         sampling_frequency = frame.get_sampling_frequency();
         freq_resolution = frame.get_frequency_resolution();
         postId = frame.get_post_id();
         count = frame.get_count();
         boundInd = frame.get_bound();
-        data = frame.get_data(0, frame.get_channels_total(), 0, frame.get_length());
+
+        free_memory();
+        allocate_memory();
+
+        complex2d * new_data_ptr = frame.get_data();
+        complex2d new_data = *new_data_ptr;
+
+        for (int ch = 0; ch < channels_total; ++ch)
+            for (int s = 0; s < samp_per_channel; ++s)
+                data[ch][s] = new_data[ch][s];
     }
     return *this;
+}
+
+void SpecFrame::allocate_memory()
+{
+    data = (complex2d ) malloc( channels_total * sizeof(complex1d));
+    for (int ch = 0; ch < channels_total; ++ch)
+        data[ch] = (complex1d) malloc(samp_per_channel * sizeof(complex<double>));
+}
+
+void SpecFrame::free_memory()
+{
+    for (int ch = 0; ch < channels_total; ++ch)
+        free(data[ch]);
+    free(data);
+}
+
+complex2d *SpecFrame::get_data(int &channels, int &samp_per_ch)
+{
+    channels = channels_total;
+    samp_per_ch = samp_per_channel;
+    return &data;
 }
 
 complex2d *SpecFrame::get_data()
@@ -45,58 +95,24 @@ complex2d *SpecFrame::get_data()
     return &data;
 }
 
-complex2d SpecFrame::get_data(int samp_start, int samp_stop) const
+void SpecFrame::set_data(complex2d *new_data_ptr, int i_channels_total, int i_samp_per_ch)
 {
-   return get_data(0, data.size(), samp_start, samp_stop);
-}
+    channels_total = i_channels_total;
+    samp_per_channel = i_samp_per_ch;
 
-complex2d SpecFrame::get_data(int ch_start, int ch_stop, int samp_start, int samp_stop) const
-{
+    free_memory();
+    allocate_memory();
 
-    samp_start -= boundInd;
-    if (samp_start < 0)
-        throw std::invalid_argument("index samp_start is out of SpecFrame bounds");
+    complex2d new_data = *new_data_ptr;
 
-    samp_stop -= boundInd;
-    if (samp_stop < 0)
-        throw std::invalid_argument("index samp_stop is out of SpecFrame bounds");
-
-    if (ch_start < 0)
-        throw std::invalid_argument("index ch_start is out of SpecFrame bounds");
-
-    if (ch_stop >= (int)data.size())
-        throw std::invalid_argument("index ch_stop is out of SpecFrame bounds");
-
-
-    complex2d output;
-    for (int ch = ch_start; ch <= ch_stop; ++ch)
-    {
-        complex1d::const_iterator first = data[ch].begin() + samp_start;
-        complex1d::const_iterator last = data[ch].begin() + samp_stop;
-        complex1d buffer(first, last);
-        output.push_back(buffer);
-    }
-
-    return output;
-
-}
-
-void SpecFrame::push_back(int channels_total, int samp_in_channel, complex<double> **extra_data)
-{
     for (int ch = 0; ch < channels_total; ++ch)
-    {
-        complex1d channel;
-        for (int samp = 0; samp < samp_in_channel; ++samp)
-        {
-            channel.push_back(extra_data[ch][samp]);
-        }
-        data.push_back(channel);
-    }
+      for (int s = 0; s < samp_per_channel; ++s)
+          data[ch][s] = new_data[ch][s];
 }
 
-void SpecFrame::set_data(complex2d data)
+void SpecFrame::filter(complex2d *freq_response)
 {
-    this->data = data;
+
 }
 
 void SpecFrame::clear()
@@ -108,9 +124,12 @@ void SpecFrame::clear()
     postId = -1;
     count = -1;
     boundInd = 0;
-    data.clear();
 
     profiler.clear();
+
+    for (int ch = 0; ch < channels_total; ++ch)
+      for (int s = 0; s < samp_per_channel; ++s)
+          data[ch][s] = 0;
 
 }
 
@@ -129,17 +148,17 @@ bool SpecFrame::is_band_limited() const
         return false;
 }
 
-bool SpecFrame::is_in_band(int samp) const
-{
-    if (data.size() <= 0)
-        return false;
+//bool SpecFrame::is_in_band(int samp) const
+//{
+//    if (samp_per_channel <= 0)
+//        return false;
 
-    if (((boundInd - samp) >= 0) && ((int)data.size() - samp >= 0))
-        return true;
-    else
-        return false;
+//    if (((boundInd - samp) >= 0) && ((int)data.size() - samp >= 0))
+//        return true;
+//    else
+//        return false;
 
-}
+//}
 
 double SpecFrame::get_carrier() const
 {
@@ -177,8 +196,8 @@ void SpecFrame::set_sampling_frequency(double fs)
 double SpecFrame::get_band_width() const
 {
     double band_width;
-    if (data.size() > 0)
-        band_width = data[0].size() * freq_resolution;
+    if (channels_total > 0)
+        band_width = samp_per_channel * freq_resolution;
     else
         band_width = NAN;
 
@@ -187,15 +206,12 @@ double SpecFrame::get_band_width() const
 
 int SpecFrame::get_channels_total() const
 {
-    return data.size();
+    return channels_total;
 }
 
 int SpecFrame::get_length() const
 {
-    if (data.size() > 0)
-        return data[0].size();
-    else
-        return -1;
+    return samp_per_channel;
 }
 
 int SpecFrame::get_full_frame_length() const

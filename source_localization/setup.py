@@ -5,7 +5,7 @@ import numpy
 
 dtypes = Extension(
     "dtypes",
-    sources=["dtypes.pyx", "antenna.cpp", "specframe.cpp"],
+    sources=["dtypes.pyx", "antenna.cpp", "specframe.cpp", "profiler.cpp", "profile.cpp"],
     language="c++",
     extra_compile_args=['-std=gnu++11'],
     library_dirs=['/usr/lib64/'],
@@ -24,9 +24,10 @@ grid = Extension(
     include_dirs=[numpy.get_include(), '/usr/include/QtCore/'],
 )
 
+
 lh = Extension(
     "pylh",
-    sources=["pylh.pyx", "lh_pel.cpp", "lh.cpp", "specframe.cpp", "antenna.cpp"],
+    sources=["pylh.pyx", "lh_pel.cpp", "lh.cpp", "specframe.cpp", "antenna.cpp", "profiler.cpp", "profile.cpp"],
     language="c++",
     extra_compile_args=['-std=gnu++11'],
     library_dirs=['/usr/lib64/'],
@@ -37,7 +38,7 @@ lh = Extension(
 
 est = Extension(
     "pyestimator",
-    sources=["pyestimator.pyx", "pelengator.cpp", "interpolator.cpp", "lh_pel.cpp", "lh.cpp", "specframe.cpp", "antenna.cpp", "grid.cpp"],
+    sources=["pyestimator.pyx", "pelengator.cpp", "interpolator.cpp", "lh_pel.cpp", "lh.cpp", "specframe.cpp", "antenna.cpp", "grid.cpp", "profiler.cpp", "profile.cpp"],
     language="c++",
     extra_compile_args=['-std=gnu++11'],
     library_dirs=['/usr/lib64/'],
