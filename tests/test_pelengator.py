@@ -10,11 +10,13 @@ import pyestimator as est
 a = dt.PyAntenna()
 a.load("/home/dima/.landing/AFS32.ini")
 el = a.get_elements()
-f0 = 1000e6
+f0 = 1310e6 # 100e6 / 2**16 * 10000
 N = 2 ** 16
-fs = f0 * N / (N/2 - 2)
-f_res = fs / N
-df = f_res
+fs = 2.1 * f0 # f0 * N / (N/2 - 2)
+f_res = 1.5e3 #fs / N
+df = 0 #f_res
+n_stop = int(np.ceil((f0 + df / 2) / f_res))
+n_start = int(np.ceil((f0 - df / 2) / f_res))
 
 
 alpha = np.arange(0, 360, 10)
@@ -23,11 +25,11 @@ grid_alpha, grid_betta = np.meshgrid(alpha, betta)
 mse = np.zeros(grid_alpha.shape)
 R = 1e4
 
-# pelengator = est.PyPelengator(a)
-# pelengator.turn_on_interpolation(False)
-# pelengator.set_signal_parameters(f0, df, f_res, fs)
+pelengator = est.PyPelengator(a, f_res, fs)
+pelengator.turn_on_interpolation(False)
+pelengator.set_signal_parameters(f0, 0, n_stop - n_start + 1)
 
-pelengator = onestage.PelengEstimator(a, f0, df, f_res, fs)
+# pelengator = onestage.PelengEstimator(a, f0, df, f_res, fs)
 
 for i in range(betta.size):
     for j in range(alpha.size):
@@ -38,8 +40,6 @@ for i in range(betta.size):
 
         sig_length = int(fs/f_res)
         signal = sig.wgn_baseband(a, target_pos, sig_length, fs)
-        n_stop = int(np.ceil((f0 + df / 2) / f_res))
-        n_start = int(np.ceil((f0 - df / 2) / f_res))
 
         frame = dt.PySpecFrame()
         frame.set_data(signal[:, n_start:n_stop])

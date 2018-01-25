@@ -1,12 +1,17 @@
 #include "pelengator.h"
 
-Pelengator::Pelengator(const Antenna &i_ant):
+Pelengator::Pelengator(const Antenna &i_ant, double f_res, double fs):
     antenna(i_ant),
-    interpolation(true)
+    interpolation(true),
+    active(false)
 {
     Py_Initialize();
-    PyInit_grid();
+    import_grid();
+    //PyInit_grid();
     PyErr_Print();
+
+    sampling_frequency = fs;
+    frequency_resolution = f_res;
 }
 
 Pelengator::~Pelengator()
@@ -14,19 +19,58 @@ Pelengator::~Pelengator()
     Py_Finalize();
 }
 
-void Pelengator::set_signal_param(double f0, double df, double f_res, double fs)
+//void Pelengator::set_signal_param(double central_frequency, double df, int i_carrier_samp)
+//{
+//    int samp_start = i_carrier_samp - round(df / frequency_resolution);
+//    int samp_stop = i_carrier_samp + round(df / frequency_resolution);
+//    set_signal_param(central_frequency, samp_start, samp_stop);
+//}
+
+void Pelengator::set_signal_param(double carrier, int i_samp_start, int i_samp_stop)
 {
     #ifdef QT_DEBUG
-        printf("__Setting signal parameters in pelengator__\n");
+        printf("\n\n__Setting signal parameters in pelengator__\n");
     #endif
 
+    samp_start = i_samp_start;
+    samp_stop = i_samp_stop;
+    double df = (i_samp_start - i_samp_stop) / 2 * frequency_resolution;
+
     vector<vector<float>> ant_coord = antenna.get_model();
-    coord_grid = pel_grid(ant_coord, f0, df, f_res, fs);
+    //coord_grid = pel_grid(ant_coord, carrier, df, frequency_resolution, sampling_frequency);
+
+    float alpha_step = 0.1151917 / 3;
+    float betta_step = 0.0157079 / 3;
+    float alpha_start = 0 - alpha_step;
+    float alpha_stop = 2 * M_PI + alpha_step;
+    float betta_start = - M_PI/2 - betta_step;
+    float betta_stop = M_PI/2 + betta_step;
+
+    vector<vector<double>> betta_grid;
+    vector<vector<double>> alpha_grid;
+    for (float b = betta_start; b <= betta_stop; b+=betta_step)
+    {
+        vector<double> alpha_vec;
+        vector<double> betta_vec;
+
+        for (float a = alpha_start; a <= alpha_stop; a+=alpha_step)
+        {
+            alpha_vec.push_back(a);
+            betta_vec.push_back(b);
+        }
+        alpha_grid.push_back(alpha_vec);
+        betta_grid.push_back(betta_vec);
+    }
+
+    coord_grid.push_back(alpha_grid);
+    coord_grid.push_back(betta_grid);
+
     if (coord_grid.empty()) {
        throw std::runtime_error("Empty coordinate grid. Can't estimate position");
     }
 
     #ifdef QT_DEBUG
+        printf("Grid size: %i x %i\n", (int)coord_grid[0].size(), (int)coord_grid[0][0].size());
         float delta_alpha =  coord_grid[0][0][1] - coord_grid[0][0][0];
         float delta_betta =  coord_grid[1][1][0] - coord_grid[1][0][0];
         printf("Alpha step: %f\n Betta step: %f\n\n", delta_alpha * 180 / M_PI, delta_betta * 180 / M_PI);
@@ -34,23 +78,24 @@ void Pelengator::set_signal_param(double f0, double df, double f_res, double fs)
 
 }
 
-estimationT Pelengator::estimate(SpecFrame frame)
+Peleng Pelengator::estimate(SpecFrame *frame)
 {
     //Предусловия
-    Q_ASSERT(frame.get_carrier() != 0 && !std::isnan(frame.get_carrier()));
-    Q_ASSERT(frame.get_sampling_frequency() != 0 && !std::isnan(frame.get_sampling_frequency()));
-    Q_ASSERT(frame.get_band_width() != 0 && !std::isnan(frame.get_band_width()));
-    Q_ASSERT(frame.get_frequency_resolution() != 0 && !std::isnan(frame.get_frequency_resolution()));
+    Q_ASSERT(frame->get_carrier() != 0 && !std::isnan(frame->get_carrier()));
+    Q_ASSERT(frame->get_sampling_frequency() != 0 && !std::isnan(frame->get_sampling_frequency()));
+    Q_ASSERT(!std::isnan(frame->get_band_width()));
+    Q_ASSERT(frame->get_frequency_resolution() != 0 && !std::isnan(frame->get_frequency_resolution()));
 
     #ifdef QT_DEBUG
-        printf("__Estimating signal parameters__\n");
+        printf("\n__Estimating signal parameters__\n");
     #endif
 
     vector<double> estimation;
 
    //Расчет матрицы функции правдоподобия
     lh_matrix.clear();
-    Lh_Pel lh(&antenna, &frame);
+
+    Lh_Pel lh(&antenna, frame, samp_start, samp_stop);
     Lh *lh_ptr = &lh;
 
     for (uint i = 0; i < coord_grid[0].size(); ++i)
@@ -82,7 +127,7 @@ estimationT Pelengator::estimate(SpecFrame frame)
     }
 
     #ifdef QT_DEBUG
-        printf("Lh at grid search min: %f\n", lh_min_enum);
+        printf("Lh at grid search min: %f\n", abs(lh_min_enum));
         printf("Enumeration estimation [deg]: alpha: %f, betta %f\n", alpha_min_enum * 180 /M_PI, betta_min_enum * 180 / M_PI);
     #endif
 
@@ -103,7 +148,7 @@ estimationT Pelengator::estimate(SpecFrame frame)
         lh_min_int = output[1][0];
 
         #ifdef QT_DEBUG
-            printf("Lh at interpolation extreme: %f\n", lh_min_int);
+            printf("Lh at interpolation extreme: %f\n", abs(lh_min_int));
             printf("Interpolation estimation [deg]: alpha: %f, betta %f\n", alpha_min_int * 180 /M_PI, betta_min_int * 180 / M_PI);
         #endif
 
@@ -126,7 +171,7 @@ estimationT Pelengator::estimate(SpecFrame frame)
     starting_point = alpha_min, betta_min;
     dlib::find_min_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-7), lh, starting_point, -1);
 
-    printf("Lh at precise min: %f\n",lh(starting_point));
+    printf("Lh at precise min: %f\n",abs(lh(starting_point)));
     estimation.push_back(starting_point(0));
     estimation.push_back(starting_point(1));
     return estimation;
@@ -135,4 +180,14 @@ estimationT Pelengator::estimate(SpecFrame frame)
 void Pelengator::turn_on_interpolation(bool turn_on)
 {
     interpolation = turn_on;
+}
+
+bool Pelengator::isActive()
+{
+    return active;
+}
+
+void Pelengator::turn_on(bool arg)
+{
+    active = arg;
 }

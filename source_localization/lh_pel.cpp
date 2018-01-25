@@ -1,12 +1,18 @@
 #include "lh_pel.h"
 
-Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data)
+Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop)
 {
 
         ant_pairs = ant->get_channels_total() * (ant->get_channels_total()-1) / 2;
         double wave_length = 3e8 / data->get_carrier();
         ang_freq = 2 * M_PI  / wave_length;
         complex2d * sig_ptr  = data->get_data();
+
+        if (samp_start >= data->get_length())
+            samp_start = data->get_length() - 1;
+
+        if (samp_stop >= data->get_length())
+            samp_stop = data->get_length() - 1;
 
         if (verbose){
                 vector<vector<float>> ant_coord = ant->get_elements();
@@ -44,7 +50,7 @@ Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data)
                 double sum_cos = 0;
                 complex<double> sum_amp = 0;
 
-                for (int samp = 0; samp < data->get_length(); ++samp)
+                for (int samp = samp_start; samp <= samp_stop; ++samp)
                 {
                     amp_temp =  abs((*sig_ptr)[m][samp]) * abs((*sig_ptr)[l][samp]);
                     phase_temp = arg((*sig_ptr)[m][samp]) - arg((*sig_ptr)[l][samp]);

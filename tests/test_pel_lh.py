@@ -16,19 +16,11 @@ from onestage import PelengEstimator
 a = Antenna()
 a.load("/home/dima/.landing/AFS32.ini")
 el = a.get_elements()
-f0 = 1000e6
+f0 = 1200e6
 N = 2 ** 16
-# fs = 250e6
-# f_res = 10e3
-# df = 10e3
 fs = f0 * N / (N/2 - 2)
 f_res = fs / N
 df = f_res
-
-lh_size = (200, 200)
-alpha = np.linspace(0, 2 * np.pi, lh_size[1])
-betta = np.linspace(-np.pi / 2, np.pi / 2, lh_size[0])
-alpha_grid, betta_grid = np.meshgrid(alpha, betta)
 
 
 lh_size = (200, 200)
@@ -38,11 +30,11 @@ alpha_grid, betta_grid = np.meshgrid(alpha, betta)
 
 
 target_size = (1, 1)
-alpha_target = np.radians(290)
-betta_target = np.radians(-9)
+alpha_target = np.radians(20)
+betta_target = np.radians(2)
 pel = np.array([alpha_target, betta_target])
 
-lh = arp(a, f0, df, fs, f_res, lh_size, peleng=pel)
+lh = arp(a, f0, df, fs, f_res, lh_size, peleng=pel, snr=100)
 # x = lh * np.cos(betta_grid) *np.cos(alpha_grid)
 # y = lh * np.cos(betta_grid) * np.sin(alpha_grid)
 # z = lh * np.sin(betta_grid)
@@ -51,4 +43,4 @@ trace = go.Surface(    name = np.str(np.rad2deg(pel)),
                        y=np.rad2deg(betta_grid),
                        z=lh)
 data = [trace]
-ply.plot(data, filename='Antenna radiaton pattern Sphere')
+ply.plot(data, filename='Lh for zero emiters')

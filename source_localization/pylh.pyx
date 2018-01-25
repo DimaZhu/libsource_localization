@@ -9,16 +9,16 @@ cdef extern from "lh.h":
 
 cdef extern from "lh_pel.h":
     cdef cppclass Lh_Pel:
-        Lh_Pel(dt.Antenna *ant, dt.SpecFrame *data)
+        Lh_Pel(dt.Antenna *ant, dt.SpecFrame *data, int samp_start, int samp_stop)
         double calculate(double alpha, double betta) const
 
 
 cdef class PyLh_Pel:
     cdef Lh_Pel *lh
-    def __cinit__(self, dt.PyAntenna ant, dt.PySpecFrame frame):
+    def __cinit__(self, dt.PyAntenna ant, dt.PySpecFrame frame, samp_start, samp_stop):
         cdef dt.Antenna *a = dt.Antenna_factory(ant)
         cdef dt.SpecFrame *s = dt.SpecFrame_factory(frame)
-        self.lh = new Lh_Pel(a, s)
+        self.lh = new Lh_Pel(a, s, samp_start, samp_stop)
 
     def __dealoc__(self):
         if self.lh is not NULL:

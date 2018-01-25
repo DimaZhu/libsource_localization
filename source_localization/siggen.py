@@ -148,7 +148,7 @@ def wgn_baseband(antenna, target, length, fs, **keywords):
 
     if 'snr' in keywords:
         scale = 1 / (10**(keywords['snr'] / 20))
-        s += norm.rvs(size=(N, length), scale=scale) + 1j*norm.rvs(size=(N, length), scale=scale)
+        s = norm.rvs(size=(N, length), scale=scale) + 1j*norm.rvs(size=(N, length), scale=scale)
 
     return s
 

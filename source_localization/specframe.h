@@ -17,11 +17,18 @@ typedef  complex<double> *complex1d;
 //typedef  QVector<QVector<complex<double>>> complex2d;
 //typedef QVector<complex<double>> complex1d;
 
-class SpecFrame : public QObject
+class SpecFrame_parent
 {
-    Q_OBJECT
 public:
-    SpecFrame(int i_channels_total, int i_samp_per_ch);
+    SpecFrame_parent();
+
+    virtual void erase_frame(int frame_number) = 0;
+};
+
+class SpecFrame
+{
+public:
+    SpecFrame(int i_channels_total = 0, int i_samp_per_ch = 0, SpecFrame_parent *i_parent = 0);
     SpecFrame(SpecFrame &frame);
     ~SpecFrame();
 
@@ -30,16 +37,17 @@ public:
     complex2d *get_data();
 
     void set_data(complex2d *new_data_ptr, int i_channels_total, int i_samp_per_ch);
-    void filter(complex2d *freq_response);
+    void filter(complex2d freq_response);
 
     void clear();
     void erase();
+    void resize(int i_channels_total, int i_samp_per_ch);
 
     //Пересчитвает нужный отсчет в индекс кадра
     int ind(int samp) const;
 
     bool is_band_limited() const; //Включен ли режим ограниченной полосы
-//    bool is_in_band(int samp) const; //Находится ли данный отсчет в полосе сигнала
+    bool is_in_band(int samp) const;
 
     void set_sampling_frequency(double fs);
     double get_sampling_frequency() const;
@@ -67,14 +75,14 @@ public:
     void set_bound(int bound);
     int get_bound() const;
 
+    SpecFrame_parent * get_parent();
+    void set_parent(SpecFrame_parent *i_parent);
+
 
     Profiler profiler;
-
-signals:
-    void erased(int);
-
 private:
 
+    SpecFrame_parent *parent;
     void allocate_memory();
     void free_memory();
 
@@ -93,6 +101,4 @@ private:
                   // целого кадра соответсвует первый отсчет
 
 };
-
-
 #endif // SPECFRAME_H

@@ -3,6 +3,8 @@ from dtypes cimport *
 
 
 from libcpp.vector cimport vector
+import numpy as np
+cimport numpy as np
 from libc.stdlib cimport malloc, free
 from cython.operator cimport dereference, address
 
@@ -149,7 +151,7 @@ cdef Antenna *Antenna_factory(PyAntenna ant):
     return a
 
 cdef class PySpecFrame:
-    def __cinit__(self, channels_total, samp_per_ch):
+    def __cinit__(self, channels_total = 0, samp_per_ch = 0):
         self.c_frame = new SpecFrame(channels_total, samp_per_ch)
 
     def __dealoc__(self):

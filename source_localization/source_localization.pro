@@ -44,7 +44,6 @@ SOURCES += \
 
 HEADERS += \
     antenna.h \
-    grid.h \
     lh_pel.h \
     pelengator.h \
     source_localization_global.h \

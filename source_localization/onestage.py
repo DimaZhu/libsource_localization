@@ -74,12 +74,13 @@ def arp(antenna, f0, df, fs, f_res, size, **keywords):
         target = np.array([[R*np.cos(keywords['peleng'][1])*np.cos(keywords['peleng'][0])],
                            [R*np.cos(keywords['peleng'][1])*np.sin(keywords['peleng'][0])],
                            [R*np.sin(keywords['peleng'][1])]])
+
     else:
         target = np.array([[-R], [0], [0]])
 
     N = int(fs/f_res)
-    n_stop = int(np.ceil((f0 + df/2) / f_res))
-    n_start = int(np.ceil((f0 - df/2) / f_res))
+    n_stop = int(np.ceil((f0 - df/2) / f_res))
+    n_start = int(np.floor((f0 + df/2) / f_res))
 
     if n_stop == n_start:
         n_stop +=1
@@ -92,16 +93,18 @@ def arp(antenna, f0, df, fs, f_res, size, **keywords):
     if n_stop > s.shape[1] or n_stop > s.shape[1] / 2:
         raise RuntimeError("signal band is more than fs / 2 ")
 
+
     alpha_line = np.linspace(0, 2 * np.pi, size[1], endpoint=False)
     betta_line = np.linspace(-np.pi / 2, np.pi / 2, size[0])
     pel = meshgrid(alpha_line, betta_line)
 
     likelihood = np.zeros(size)
 
-    frame = PySpecFrame()
-    frame.set_data(s[:, n_start:n_stop])
+    s_cutted = s[:, n_start:n_stop]
+    frame = PySpecFrame(antenna.get_channels_total(), N)
+    frame.set_data(s_cutted)
     frame.set_carrier(f0)
-    lh = PyLh_Pel(antenna, frame)
+    lh = PyLh_Pel(antenna, frame, 0, n_stop - n_start + 1)
     for i in range(size[0]):
         for j in range(size[1]):
             likelihood[i, j] = -lh.calc(pel[:, i, j])
@@ -148,47 +151,88 @@ def beam_width_est(**kwargs):
 
     # alpha width
     stop = alpha_max
+    full_circle = False
+    omnidirectional = False
     while lh[betta_max, stop] > max_val/2:
         stop += 1
         if stop == size[1]:  # overlapping
-            stop = 0
+            stop = size[1]
+        #     full_circle = True
+        #
+        # if full_circle and (stop == alpha_max):
+        #     omnidirectional = True
+            break
 
     stop -= 1
 
     start = alpha_max
+    # if not omnidirectional:
+
     while lh[betta_max, start] > max_val/2:
         start -= 1
 
+        if start == 0:
+            start = 0
+            break
+
     start += 1
 
-    if start < 0:
-        start += size[1] - 1
+    # if start < 0:
+    #     start += size[1] - 1
 
     if stop >= start:
         alpha_width = (stop - start + 1) * (2 * np.pi) / size[1]
     else:
         alpha_width = (stop - start + size[1]) * (2 * np.pi) / size[1]
 
+    # else:
+    #
+    #     alpha_width = 2 * np.pi
+
+    if alpha_width < 0:
+        alpha_width = 2 * np.pi
+
+
     # betta width
     stop = betta_max
+    # full_circle = False
+    # omnidirectional = False
+
     while lh[stop, alpha_max] > max_val/2:
         stop += 1
-        if stop == size[1]:  # overlapping
-            print("It seems betta is near pi/2. These algorithm doesn't work for such angles")
-            return -1
+        if stop == size[0]:  # overlapping
+            stop = size[0]
+            break
+            # if lh[0, alpha_max] > max_val/2:
+            #     omnidirectional = True
+            #     break
+            # else:
+            #     print("It seems betta is near pi/2. These algorithm doesn't work for such angles")
+            #     return -1
 
     stop -= 1
 
     start = betta_max
+
+    # if not omnidirectional:
     while lh[start, alpha_max] > max_val/2:
         start -= 1
-        if start < 0:
-            print("It seems betta is near -pi/2. These algorithm doesn't work for such angles")
-            return -1
+        if start == 0:
+            start = 0
+            break
+        # if start < 0:
+        #     print("It seems betta is near -pi/2. These algorithm doesn't work for such angles")
+        #     return -1
 
     start += 1
 
     betta_width = (stop - start + 1) * np.pi / size[0]
+    # else:
+
+    # betta_width = np.pi
+
+    if betta_width < 0:
+        betta_width = np.pi
 
     return np.array([alpha_width, betta_width])
 
@@ -199,7 +243,7 @@ class PelengEstimator:
 
     def __init__(self, antenna, f0, df, f_res, fs):
         beam_width = beam_width_est(antenna=antenna, f0=f0, df=df, fs=fs, f_res=f_res)
-        print(np.rad2deg(beam_width))
+        print("Beam_width", np.rad2deg(beam_width))
 
         self.peleng = grid.pypel_grid(antenna, f0, df, f_res, fs)
         self.lh_size = self.peleng.shape[1:3]

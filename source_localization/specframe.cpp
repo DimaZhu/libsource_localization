@@ -1,7 +1,7 @@
 #include "specframe.h"
 
-SpecFrame::SpecFrame(int i_channels_total, int i_samp_per_ch):
-    QObject(),
+SpecFrame::SpecFrame(int i_channels_total, int i_samp_per_ch, SpecFrame_parent *i_parent):
+    parent(i_parent),
     channels_total(i_channels_total),
     samp_per_channel(i_samp_per_ch),
     f0(NAN),
@@ -11,11 +11,14 @@ SpecFrame::SpecFrame(int i_channels_total, int i_samp_per_ch):
     count(-1),
     boundInd(0)
 {
-    allocate_memory();
+    if ((i_channels_total == 0) || (i_samp_per_ch == 0))
+        data = nullptr;
+    else
+        allocate_memory();
 }
 
 SpecFrame::SpecFrame(SpecFrame &frame):
-    QObject(),
+    parent(frame.get_parent()),
     channels_total(frame.get_channels_total()),
     samp_per_channel(frame.get_length()),
     f0(frame.get_carrier()),
@@ -47,6 +50,7 @@ const SpecFrame &SpecFrame::operator =(SpecFrame &frame)
     // Избегать самоприсваивания
     if (&frame != this) {
 
+        parent=frame.get_parent();
         channels_total = frame.get_channels_total();
         samp_per_channel = frame.get_length();
         f0 = frame.get_carrier();
@@ -74,13 +78,27 @@ void SpecFrame::allocate_memory()
     data = (complex2d ) malloc( channels_total * sizeof(complex1d));
     for (int ch = 0; ch < channels_total; ++ch)
         data[ch] = (complex1d) malloc(samp_per_channel * sizeof(complex<double>));
+
+    clear();
 }
 
 void SpecFrame::free_memory()
 {
-    for (int ch = 0; ch < channels_total; ++ch)
-        free(data[ch]);
-    free(data);
+    if(data != nullptr) {
+        for (int ch = 0; ch < channels_total; ++ch)
+            free(data[ch]);
+        free(data);
+    }
+}
+
+void SpecFrame::resize(int i_channels_total, int i_samp_per_ch)
+{
+    channels_total = i_channels_total;
+    samp_per_channel = i_samp_per_ch;
+
+    free_memory();
+    allocate_memory();
+
 }
 
 complex2d *SpecFrame::get_data(int &channels, int &samp_per_ch)
@@ -110,8 +128,12 @@ void SpecFrame::set_data(complex2d *new_data_ptr, int i_channels_total, int i_sa
           data[ch][s] = new_data[ch][s];
 }
 
-void SpecFrame::filter(complex2d *freq_response)
+void SpecFrame::filter(complex2d freq_response)
 {
+
+    for (int ch = 0; ch < channels_total; ++ch)
+      for (int s = 0; s < samp_per_channel; ++s)
+          data[ch][s] = data[ch][s] * freq_response[ch][s + boundInd];
 
 }
 
@@ -119,11 +141,7 @@ void SpecFrame::clear()
 {
 
     f0 = NAN;
-    sampling_frequency = NAN;
-    freq_resolution = NAN;
-    postId = -1;
     count = -1;
-    boundInd = 0;
 
     profiler.clear();
 
@@ -148,17 +166,17 @@ bool SpecFrame::is_band_limited() const
         return false;
 }
 
-//bool SpecFrame::is_in_band(int samp) const
-//{
-//    if (samp_per_channel <= 0)
-//        return false;
+bool SpecFrame::is_in_band(int samp) const
+{
+    if (samp_per_channel <= 0)
+        return false;
 
-//    if (((boundInd - samp) >= 0) && ((int)data.size() - samp >= 0))
-//        return true;
-//    else
-//        return false;
+    if ((samp >= boundInd) && (samp < (boundInd + samp_per_channel)))
+        return true;
+    else
+        return false;
 
-//}
+}
 
 double SpecFrame::get_carrier() const
 {
@@ -254,7 +272,21 @@ int SpecFrame::get_bound() const
 
 void SpecFrame::erase()
 {
-    emit erased(count);
+    parent->erase_frame(count);
 }
 
+SpecFrame_parent *SpecFrame::get_parent()
+{
+    return parent;
 
+}
+
+void SpecFrame::set_parent(SpecFrame_parent *i_parent)
+{
+    parent = i_parent;
+}
+
+SpecFrame_parent::SpecFrame_parent()
+{
+
+}
