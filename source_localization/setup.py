@@ -30,7 +30,7 @@ dtypes = Extension(
     sources=["dtypes.pyx", "antenna.cpp", "specframe.cpp", "profiler.cpp", "profile.cpp"],
     language="c++",
     extra_compile_args=['-std=gnu++11'],
-    library_dirs=[get_path_to_file(find("libQtCore.so", "/")[0])],
+    library_dirs=[get_path_to_file(find("libQtCore.so*", "/")[0])],
     libraries=["QtCore"],
     include_dirs=[numpy.get_include(), '/usr/include', get_path_to_file(find("qstring.h", "/usr")[0]), './dlib/', './'],
 )
@@ -41,7 +41,7 @@ grid = Extension(
     sources=["grid.pyx"],
     extra_compile_args=['-std=gnu++11'],
     language="c++",
-    library_dirs=[get_path_to_file(find("libQtCore.so", "/")[0])],
+    library_dirs=[get_path_to_file(find("libQtCore.so*", "/")[0])],
     libraries=["QtCore"],
     include_dirs=[numpy.get_include(), get_path_to_file(find("qstring.h", "/usr")[0])],
 )
@@ -52,7 +52,7 @@ lh = Extension(
     sources=["pylh.pyx", "lh_pel.cpp", "lh.cpp", "specframe.cpp", "antenna.cpp", "profiler.cpp", "profile.cpp"],
     language="c++",
     extra_compile_args=['-std=gnu++11'],
-    library_dirs=[get_path_to_file(find("libQtCore.so", "/")[0])],
+    library_dirs=[get_path_to_file(find("libQtCore.so*", "/")[0])],
     libraries=["QtCore"],
     include_dirs=[numpy.get_include(), './dlib/', get_path_to_file(find("qstring.h", "/usr")[0]), './'],
 )
@@ -63,7 +63,7 @@ est = Extension(
     sources=["pyestimator.pyx", "pelengator.cpp", "interpolator.cpp", "lh_pel.cpp", "lh.cpp", "specframe.cpp", "antenna.cpp", "grid.cpp", "profiler.cpp", "profile.cpp"],
     language="c++",
     extra_compile_args=['-std=gnu++11'],
-    library_dirs=[get_path_to_file(find("libQtCore.so", "/")[0])],
+    library_dirs=[get_path_to_file(find("libQtCore.so*", "/")[0])],
     libraries=["QtCore"],
     include_dirs=['/usr/include', get_path_to_file(find("qstring.h", "/usr")[0]),  numpy.get_include(), './dlib/', './'],
 )

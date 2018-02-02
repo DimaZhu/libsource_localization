@@ -3,7 +3,6 @@
 
 #include <antenna.h>
 #include <vector>
-#include <fftw3.h>
 #include <complex>
 #include <math.h>
 
