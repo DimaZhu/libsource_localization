@@ -38,6 +38,7 @@ public:
 
     void set_data(complex2d *new_data_ptr, int i_channels_total, int i_samp_per_ch);
     void filter(complex2d freq_response);
+    void filter(complex1d freq_response, int ch_ind);
 
     void clear();
     void erase();

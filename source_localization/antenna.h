@@ -17,6 +17,8 @@ using namespace std;
  * моделирования фазированной антенной решетки
  */
 
+typedef vector<float> coordinate;
+typedef vector<vector<float>> coordinates;
 class Antenna
 {
 

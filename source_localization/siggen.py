@@ -123,6 +123,7 @@ class Antenna:
 
 def wgn_baseband(antenna, target, length, fs, **keywords):
     from scipy.stats import norm
+    import scipy.fftpack as fft
 
     if len(target.shape) is 1:
         target = np.array([target])
@@ -144,13 +145,13 @@ def wgn_baseband(antenna, target, length, fs, **keywords):
     s0 = np.array([s0.T])
     s = np.matmul(np.ones((N, 1)), s0)
 
-    s = delay(s, tau, fs)
+    s_f = delay(s, tau, fs)
 
     if 'snr' in keywords:
         scale = 1 / (10**(keywords['snr'] / 20))
         s = norm.rvs(size=(N, length), scale=scale) + 1j*norm.rvs(size=(N, length), scale=scale)
 
-    return s
+    return s_f
 
 
 def delay(signal, tau, fs):

@@ -6,8 +6,8 @@
 #include<specframe.h>
 #include<interpolator.h>
 #include<cmath>
-#include<grid_api.h>
 #include<lh_pel.h>
+#include<grid_pel.h>
 
 typedef vector<double> Peleng;
 
@@ -25,7 +25,7 @@ public:
     void turn_on_interpolation(bool turn_on);
     bool isActive();
     void turn_on(bool);
-
+    void set_verbose(bool );
 private:
 
     Antenna antenna;
@@ -33,6 +33,7 @@ private:
     vector<vector<double>> lh_matrix;
     PyObject * grid_func;
     bool interpolation;
+    bool verbose;
     double sampling_frequency;
     double frequency_resolution;
     bool active;

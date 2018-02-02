@@ -1,6 +1,6 @@
 #include "lh_pel.h"
 
-Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop)
+Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop, bool verbose)
 {
 
         ant_pairs = ant->get_channels_total() * (ant->get_channels_total()-1) / 2;
@@ -34,7 +34,9 @@ Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop)
                         printf("%f,  ", ant_coord[i][j]);
                 }
 
+                printf("\nSignal indexes: [%i, %i]\n", samp_start, samp_stop);
                 printf("\nSignal length:  %d\nElements total: %d\nCarrier: %e\n\n\n\n", data->get_length(), ant->get_channels_total(), data->get_carrier());
+
         }
 
 

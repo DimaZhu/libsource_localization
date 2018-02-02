@@ -25,8 +25,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += /usr/include/python3.5m/\
                             /usr/include/c++/5.4.0/\
+                            /usr/include/\
                             /usr/lib64/python3.5/site-packages/numpy/core/include/\
 
+LIBS += -L/usr/lib64 -lfftw3
 
 
 SOURCES += \
@@ -35,12 +37,12 @@ SOURCES += \
     lh_pel.cpp \
     dtypes.cpp \
     antenna.cpp \
-    grid.cpp \
     interpolator.cpp \
     lh.cpp \
     profiler.cpp \
     profile.cpp \
-    profile_analizer.cpp
+    profile_analizer.cpp \
+    grid_pel.cpp
 
 HEADERS += \
     antenna.h \
@@ -52,7 +54,8 @@ HEADERS += \
     lh.h \
     profiler.h \
     profile.h \
-    profile_analizer.h
+    profile_analizer.h \
+    grid_pel.h
 
 unix {
     target.path = /usr/lib

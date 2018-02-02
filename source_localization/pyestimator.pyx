@@ -13,6 +13,7 @@ cdef extern from "pelengator.h" nogil:
         void set_signal_param(double f0, int samp_start, int samp_stop)
         vector[double] estimate(dt.SpecFrame *frame)
         void turn_on_interpolation(bool turn_on)
+        void set_verbose(bool)
 
 cdef class PyPelengator:
     cdef Pelengator *pelengator
@@ -34,6 +35,9 @@ cdef class PyPelengator:
 
     def turn_on_interpolation(self, bool turn_on):
         self.pelengator.turn_on_interpolation(turn_on)
+
+    def set_verbose(self, arg):
+        self.pelengator.set_verbose(arg)
 
 
 

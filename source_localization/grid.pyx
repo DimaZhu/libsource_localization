@@ -3,12 +3,12 @@ cimport dtypes as dt
 import numpy as np
 cimport numpy as np
 from libcpp.vector cimport vector
-import onestage
+import pelengator
 from libc.stdio cimport printf
 
 # public vector[vector[vector[double]]]
 
-cdef api vector[vector[vector[double]]] pel_grid(vector[vector[float]] ant_coord, double f0, double df, double f_res, double fs):
+cdef vector[vector[vector[double]]] pel_grid(vector[vector[float]] ant_coord, double f0, double df, double f_res, double fs):
     cdef float alpha_width
     cdef float betta_width
     cdef vector[vector[vector[double]]] grid
@@ -34,7 +34,7 @@ cdef api vector[vector[vector[double]]] pel_grid(vector[vector[float]] ant_coord
     alpha_line = np.linspace(-step_alpha, 2 * np.pi + step_alpha, 2 * np.pi/step_alpha + 3 , endpoint=True)
     betta_line = np.linspace(-np.pi/2 - step_betta, np.pi/2 + step_betta, np.pi/step_betta + 3, endpoint=True)
 
-    grid = onestage.meshgrid(alpha_line, betta_line)
+    grid = pelengator.meshgrid(alpha_line, betta_line)
 
 
     return grid

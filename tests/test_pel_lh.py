@@ -16,7 +16,7 @@ from onestage import PelengEstimator
 a = Antenna()
 a.load("/home/dima/.landing/AFS32.ini")
 el = a.get_elements()
-f0 = 1200e6
+f0 = 310e6
 N = 2 ** 16
 fs = f0 * N / (N/2 - 2)
 f_res = fs / N
@@ -30,17 +30,17 @@ alpha_grid, betta_grid = np.meshgrid(alpha, betta)
 
 
 target_size = (1, 1)
-alpha_target = np.radians(20)
-betta_target = np.radians(2)
+alpha_target = np.radians(70)
+betta_target = np.radians(70)
 pel = np.array([alpha_target, betta_target])
 
-lh = arp(a, f0, df, fs, f_res, lh_size, peleng=pel, snr=100)
-# x = lh * np.cos(betta_grid) *np.cos(alpha_grid)
-# y = lh * np.cos(betta_grid) * np.sin(alpha_grid)
-# z = lh * np.sin(betta_grid)
+lh = arp(a, f0, df, fs, f_res, lh_size, peleng=pel)
+x = lh * np.cos(betta_grid) *np.cos(alpha_grid)
+y = lh * np.cos(betta_grid) * np.sin(alpha_grid)
+z = lh * np.sin(betta_grid)
 trace = go.Surface(    name = np.str(np.rad2deg(pel)),
                        x=np.rad2deg(alpha_grid),
                        y=np.rad2deg(betta_grid),
                        z=lh)
 data = [trace]
-ply.plot(data, filename='Lh for zero emiters')
+ply.plot(data, filename='Lh')

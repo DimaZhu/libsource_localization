@@ -137,6 +137,12 @@ void SpecFrame::filter(complex2d freq_response)
 
 }
 
+void SpecFrame::filter(complex1d freq_response, int ch_ind)
+{
+    for (int s = 0; s < samp_per_channel; ++s)
+        data[ch_ind][s] = data[ch_ind][s] * freq_response[s + boundInd];
+}
+
 void SpecFrame::clear()
 {
 

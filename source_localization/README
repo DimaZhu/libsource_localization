@@ -1,0 +1,13 @@
+Prerequisites:
+    -python 3.5 and higer
+    -cython
+    -plotly
+    -numpy
+    -scipy
+    -jupyter-notebook
+    -gcc
+    -g++
+    -qt
+
+1. "python3.5 setup.py build_ext --inplace"
+2. 
