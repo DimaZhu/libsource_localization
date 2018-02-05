@@ -1,7 +1,6 @@
 #ifndef PROFILER_H
 #define PROFILER_H
 
-#include <QMap>
 #include <chrono>
 #include <profile.h>
 
@@ -12,8 +11,8 @@ class Profiler
 {
 public:
     Profiler();
-    void start(QString name);
-    void stop(QString name);
+    void start(string name);
+    void stop(string name);
     void clear();
     Profile get_profile();
 
@@ -21,7 +20,7 @@ public:
 private:
     Profile profile;
     std::chrono::time_point<std::chrono::steady_clock> begin;
-    QString currentName;
+    string currentName;
 };
 
 #endif // PROFILER_H

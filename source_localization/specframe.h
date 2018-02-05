@@ -1,14 +1,12 @@
 #ifndef SPECFRAME_H
 #define SPECFRAME_H
 
-#include <QDebug>
-#include <QtGlobal>
-#include <QObject>
 #include <cstring>
 #include <complex>
 #include <vector>
 #include <profiler.h>
 #include <deque>
+#include <cassert>
 
 using namespace std;
 typedef  complex<double> ** complex2d;

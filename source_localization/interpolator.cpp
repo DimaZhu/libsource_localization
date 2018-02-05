@@ -116,7 +116,7 @@ Interpolator::Interpolator()
 
 
      } catch (std::exception &e){
-         qDebug() << e.what();
+         // qDebug() << e.what();
      }
 
 

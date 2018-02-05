@@ -1,17 +1,17 @@
 #ifndef PROFILE_H
 #define PROFILE_H
 
-#include <QString>
+#include <string>
 #include <vector>
 
 
-
+using namespace std;
 class Profile_entity
 {
 public:
     Profile_entity();
 
-    QString name;
+    string name;
     int time_total;
     int time_aver;
     int count;

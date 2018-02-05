@@ -159,7 +159,7 @@ void SpecFrame::clear()
 
 int SpecFrame::ind(int samp) const
 {
-    Q_ASSERT(samp >= 0);
+    assert(samp >= 0);
     samp -= boundInd;
     return samp;
 }
@@ -191,7 +191,7 @@ double SpecFrame::get_carrier() const
 
 void SpecFrame::set_carrier(double f0)
 {
-    Q_ASSERT(f0 > 0);
+    assert(f0 > 0);
     this->f0 = f0;
 }
 
@@ -202,7 +202,7 @@ double SpecFrame::get_frequency_resolution() const
 
 void SpecFrame::set_frequency_resolution(double f_res)
 {
-    Q_ASSERT(f_res > 0);
+    assert(f_res > 0);
     freq_resolution = f_res;
 }
 
@@ -213,7 +213,7 @@ double SpecFrame::get_sampling_frequency() const
 
 void SpecFrame::set_sampling_frequency(double fs)
 {
-    Q_ASSERT(fs > 0);
+    assert(fs > 0);
     sampling_frequency = fs;
 }
 
@@ -245,7 +245,7 @@ int SpecFrame::get_full_frame_length() const
 
 void SpecFrame::set_post_id(int id)
 {
-    Q_ASSERT(id >= 0);
+    assert(id >= 0);
     postId = id;
 }
 
@@ -256,7 +256,7 @@ int SpecFrame::get_post_id() const
 
 void SpecFrame::set_count(int val)
 {
-    Q_ASSERT(val >= 0);
+    assert(val >= 0);
     count = val;
 }
 
@@ -267,7 +267,7 @@ int SpecFrame::get_count() const
 
 void SpecFrame::set_bound(int bound)
 {
-    Q_ASSERT(bound >= 0);
+    assert(bound >= 0);
     boundInd = bound;
 }
 

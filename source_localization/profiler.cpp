@@ -5,15 +5,15 @@ Profiler::Profiler()
 
 }
 
-void Profiler::start(QString name)
+void Profiler::start(string name)
 {
     begin = std::chrono::steady_clock::now();
     currentName = name;
 }
 
-void Profiler::stop(QString name)
+void Profiler::stop(string name)
 {
-    if (currentName != name)
+    if (currentName.compare(name) != 0)
         return;
 
     auto end = std::chrono::steady_clock::now();

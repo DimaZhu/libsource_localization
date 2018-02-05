@@ -1,7 +1,6 @@
 #ifndef SOURCE_LOCALIZATION_GLOBAL_H
 #define SOURCE_LOCALIZATION_GLOBAL_H
 
-#include <QtCore/qglobal.h>
 #include <stdexcept>
 
 #if defined(SOURCE_LOCALIZATION_LIBRARY)

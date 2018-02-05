@@ -1,7 +1,6 @@
 #ifndef PELENGATOR_H
 #define PELENGATOR_H
 
-#include <Python.h>
 #include<antenna.h>
 #include<specframe.h>
 #include<interpolator.h>
@@ -31,7 +30,6 @@ private:
     Antenna antenna;
     vector<vector<vector<double>>> coord_grid;
     vector<vector<double>> lh_matrix;
-    PyObject * grid_func;
     bool interpolation;
     bool verbose;
     double sampling_frequency;

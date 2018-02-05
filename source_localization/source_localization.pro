@@ -28,7 +28,6 @@ INCLUDEPATH += /usr/include/python3.5m/\
                             /usr/include/\
                             /usr/lib64/python3.5/site-packages/numpy/core/include/\
 
-LIBS += -L/usr/lib64 -lfftw3
 
 
 SOURCES += \

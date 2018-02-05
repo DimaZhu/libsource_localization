@@ -8,19 +8,19 @@ Antenna::Antenna():
     base = vector<float>(DIM,0);
 }
 
-Antenna::Antenna(QString &filename) :
-    orientation(0),
-    name("NO NAME")
-{
-    initialization(filename);
-}
+//Antenna::Antenna(QString &filename) :
+//    orientation(0),
+//    name("NO NAME")
+//{
+//    initialization(filename);
+//}
 
 Antenna::Antenna(char *str):
     orientation(0),
     name("NO NAME")
 {
 
-    QString filename(str);
+    string filename(str);
     initialization(filename);
 }
 
@@ -35,7 +35,7 @@ Antenna::Antenna(const Antenna &antenna) :
 
     set_orientation(antenna.get_orientation());
 
-    set_name(antenna.get_name());
+    //set_name(antenna.get_name());
 }
 
 Antenna::~Antenna()
@@ -51,53 +51,56 @@ Antenna::~Antenna()
 
 }
 
-void Antenna::initialization(QString &filename)
+void Antenna::initialization(string &filename)
 {
     base = vector<float>(DIM,0);
 
     //Считывание типа антенны
-    QRegExp rx("(\\/|\\.)");
-    QStringList list = filename.split(rx, QString::SkipEmptyParts);
-    name= list.at(list.length() - 2);
 
-    // Инициализация антены по ini файлу
-    bool ok = true;
-    QSettings antennaSettings(filename, QSettings::IniFormat);
+    for (int i = filename.size() - 1; i >= 0; --i)
+        if (filename.at(i) == '/') {
+            name = string(filename, i, filename.size() - 1);
+            break;
+        }
 
-    quint8 chTotal = antennaSettings.value(QString::fromUtf8("DEFAULT/channels number"), "-1").toInt(&ok);
+//    // Инициализация антены по ini файлу
+//    bool ok = true;
+//    QSettings antennaSettings(filename, QSettings::IniFormat);
 
-    for (quint8 ch = 0; ch < chTotal; ++ch)
-    {
+//    quint8 chTotal = antennaSettings.value(QString::fromUtf8("DEFAULT/channels number"), "-1").toInt(&ok);
 
-        vector<float> point;
+//    for (quint8 ch = 0; ch < chTotal; ++ch)
+//    {
 
-        float alpha = antennaSettings.value(QString::fromUtf8("DEFAULT/alpha%1").arg(ch), "-1").toDouble(&ok);
-        alpha *= M_PI / 180;
-//            if( ok != true) {
-//                emit error("Error occured while reading from " + filename);
-//                return;
-//            }
+//        vector<float> point;
 
-        float radius = antennaSettings.value(QString::fromUtf8("DEFAULT/r%1").arg(ch), "-1").toDouble(&ok);
-//            if( ok != true) {
-//                emit error("Error occured while reading from " + filename);
-//                return;
-//            }
+//        float alpha = antennaSettings.value(QString::fromUtf8("DEFAULT/alpha%1").arg(ch), "-1").toDouble(&ok);
+//        alpha *= M_PI / 180;
+////            if( ok != true) {
+////                emit error("Error occured while reading from " + filename);
+////                return;
+////            }
 
-        float z = antennaSettings.value(QString::fromUtf8("DEFAULT/z%1").arg(ch), "-1").toDouble(&ok);
-//            if( ok != true) {
-//                emit error("Error occured while reading from " + filename);
-//                return;
-//            }
+//        float radius = antennaSettings.value(QString::fromUtf8("DEFAULT/r%1").arg(ch), "-1").toDouble(&ok);
+////            if( ok != true) {
+////                emit error("Error occured while reading from " + filename);
+////                return;
+////            }
 
-        float x =radius * cos( alpha);
-        float y =  radius * sin( alpha);
+//        float z = antennaSettings.value(QString::fromUtf8("DEFAULT/z%1").arg(ch), "-1").toDouble(&ok);
+////            if( ok != true) {
+////                emit error("Error occured while reading from " + filename);
+////                return;
+////            }
 
-        point.push_back(x);
-        point.push_back(y);
-        point.push_back(z);
-        model.push_back(point);
-    }
+//        float x =radius * cos( alpha);
+//        float y =  radius * sin( alpha);
+
+//        point.push_back(x);
+//        point.push_back(y);
+//        point.push_back(z);
+//        model.push_back(point);
+//    }
 
     //Расчитываем сколько элементов на кажом этаже
     calculate_stages_number();
@@ -114,8 +117,8 @@ bool operator==(const Antenna &antenna1, const Antenna &antenna2)
     if (antenna1.get_channels_total() != antenna2.get_channels_total())
         return false;
 
-    vector<vector<float>> coordinates1 = antenna1.get_elements();
-    vector<vector<float>> coordinates2 = antenna2.get_elements();
+    vector<vector<float> > coordinates1 = antenna1.get_elements();
+    vector<vector<float> > coordinates2 = antenna2.get_elements();
 
     for (int i = 0; i < antenna1.get_channels_total(); ++i)
     {
@@ -133,7 +136,7 @@ bool operator==(const Antenna &antenna1, const Antenna &antenna2)
 }
 
 
-void Antenna::set_model(vector<vector<float>> coordinates)
+void Antenna::set_model(vector<vector<float> > coordinates)
 {
     // Удаляем предыдущие данные
     elementsOnStages.clear();
@@ -172,14 +175,14 @@ void Antenna::calculate_stages_number()
 
 void Antenna::set_base( vector< float> coordinates)
 {
-    Q_ASSERT(coordinates.size() == DIM);
+    //Q_ASSERT(coordinates.size() == DIM);
     base = coordinates;
 }
 
 void Antenna::set_orientation(float i_orientation)
 {
     //Проверка предусловий
-    Q_ASSERT_X((i_orientation < 2*M_PI) || (i_orientation > -2 * M_PI), "Seems that oriantation is in degress, not in radians", "antenna.cpp, set_orientation");
+   // Q_ASSERT_X((i_orientation < 2*M_PI) || (i_orientation > -2 * M_PI), "Seems that oriantation is in degress, not in radians", "antenna.cpp, set_orientation");
 
     orientation = i_orientation;
     calculate_elements_coordinates();
@@ -191,7 +194,7 @@ void Antenna::calculate_elements_coordinates()
     elements.clear();
 
     // Считаем
-    for (quint8 ch = 0; ch < get_channels_total(); ++ch)
+    for (int ch = 0; ch < get_channels_total(); ++ch)
     {
         float x = model[ch][0] * cos( orientation ) - model[ch][1] * sin(orientation) + base[0];
         float y = model[ch][0] * sin( orientation) + model[ch][1] * cos(orientation) + base[1];
@@ -204,7 +207,7 @@ void Antenna::calculate_elements_coordinates()
     }
 }
 
-vector< vector< float>> Antenna::get_model() const
+vector< vector< float> > Antenna::get_model() const
 {
     return model;
 }
@@ -228,14 +231,14 @@ vector<vector<float> > Antenna::get_elements() const
     return elements;
 }
 
-bool Antenna::adjust_elements_coordinates(vector< vector< float>> correction)
+bool Antenna::adjust_elements_coordinates(vector< vector< float> > correction)
 {
 
     if (correction.size() != elements.size())
         return false;
 
     // Присваиваем
-    for (quint8 ch = 0; ch < correction.size(); ++ch)
+    for (size_t ch = 0; ch < correction.size(); ++ch)
     {
        float x = elements[ch][0] + correction[ch][0];
        float y = elements[ch][1] + correction[ch][1];
@@ -250,7 +253,7 @@ bool Antenna::adjust_elements_coordinates(vector< vector< float>> correction)
     return true;
 }
 
-void Antenna::set_name(QString  i_name)
+void Antenna::set_name(string  i_name)
 {
     name = i_name;
 }
@@ -260,7 +263,7 @@ int Antenna::get_channels_total() const
     return model.size();
 }
 
-QString Antenna::get_name() const
+string Antenna::get_name() const
 {
     return name;
 }
@@ -271,64 +274,64 @@ float Antenna::get_orientation() const
 }
 
 
-void Antenna::save_in_file(QTextStream &out) const
-{
+//void Antenna::save_in_file(QTextStream &out) const
+//{
 
-    out << get_channels_total() << "\n";
+//    out << get_channels_total() << "\n";
 
-    out << base[0] << " " << base[1] << " " << base[2] << "\n";
+//    out << base[0] << " " << base[1] << " " << base[2] << "\n";
 
-    for (int i = 0; i < get_channels_total(); ++i)
-        out << model[i][0] << " " << model[i][1] << " " <<  model[i][2] << "\n";
+//    for (int i = 0; i < get_channels_total(); ++i)
+//        out << model[i][0] << " " << model[i][1] << " " <<  model[i][2] << "\n";
 
-    out << orientation << "\n";
+//    out << orientation << "\n";
 
-    out << name << "\n";
+//    out << name << "\n";
 
-}
+//}
 
-Antenna Antenna::read_from_file(QTextStream &in)
-{
-    Antenna antenna;
+//Antenna Antenna::read_from_file(QTextStream &in)
+//{
+//    Antenna antenna;
 
-    int channelTotal;
-    in >> channelTotal;
+//    int channelTotal;
+//    in >> channelTotal;
 
-    vector<float> baseCoordinate;
-    float buffer;
-    in >> buffer;
-    baseCoordinate.push_back(buffer);
-    in >> buffer;
-    baseCoordinate.push_back(buffer);
-    in >> buffer;
-    baseCoordinate.push_back(buffer);
+//    vector<float> baseCoordinate;
+//    float buffer;
+//    in >> buffer;
+//    baseCoordinate.push_back(buffer);
+//    in >> buffer;
+//    baseCoordinate.push_back(buffer);
+//    in >> buffer;
+//    baseCoordinate.push_back(buffer);
 
-    antenna.set_base(baseCoordinate);
+//    antenna.set_base(baseCoordinate);
 
 
-    vector<vector<float>> model;
-    for (int i = 0; i < channelTotal; ++i) {
-        vector<float> coordinate;
-        in >> buffer;
-        coordinate.push_back(buffer);
-        in >> buffer;
-        coordinate.push_back(buffer);
-        in >> buffer;
-        coordinate.push_back(buffer);
+//    vector<vector<float>> model;
+//    for (int i = 0; i < channelTotal; ++i) {
+//        vector<float> coordinate;
+//        in >> buffer;
+//        coordinate.push_back(buffer);
+//        in >> buffer;
+//        coordinate.push_back(buffer);
+//        in >> buffer;
+//        coordinate.push_back(buffer);
 
-        model.push_back(coordinate);
-    }
+//        model.push_back(coordinate);
+//    }
 
-    antenna.set_model(model);
+//    antenna.set_model(model);
 
-    in >> buffer;
-    antenna.set_orientation(buffer);
+//    in >> buffer;
+//    antenna.set_orientation(buffer);
 
-    QString name;
-    in >> name;
-    antenna.set_name(name);
+//    QString name;
+//    in >> name;
+//    antenna.set_name(name);
 
-    return antenna;
-}
+//    return antenna;
+//}
 
 
