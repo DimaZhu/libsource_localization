@@ -12,8 +12,6 @@ using namespace std;
 typedef  complex<double> ** complex2d;
 typedef  complex<double> *complex1d;
 
-//typedef  QVector<QVector<complex<double>>> complex2d;
-//typedef QVector<complex<double>> complex1d;
 
 class SpecFrame_parent
 {

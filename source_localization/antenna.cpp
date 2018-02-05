@@ -8,20 +8,75 @@ Antenna::Antenna():
     base = vector<float>(DIM,0);
 }
 
-//Antenna::Antenna(QString &filename) :
-//    orientation(0),
-//    name("NO NAME")
-//{
-//    initialization(filename);
-//}
 
-Antenna::Antenna(char *str):
+Antenna::Antenna(string str):
     orientation(0),
     name("NO NAME")
 {
 
     string filename(str);
-    initialization(filename);
+    base = vector<float>(DIM,0);
+
+    //Считывание типа антенны
+
+    int stop = -1;
+    for (int i = filename.size() - 1; i >= 0; --i)
+    {
+        if (filename.at(i) == '.')
+            stop = i - 1 ;
+
+        if (filename.at(i) == '/') {
+            name = string(filename, i + 1, stop - i);
+            break;
+        }
+    }
+
+    // Инициализация антены по ini файлу
+
+   string line;
+   ifstream file(filename);
+   if (file.is_open())
+   {
+       vector<float> point;
+
+       while(getline (file, line))
+       {
+            std::size_t found = line.find("alpha");
+            if (found == 0) {
+                found = line.find("=");
+                float alpha = std::stof(std::string(line, found + 1, line.size() - 1));
+                point.push_back(alpha);
+                continue;
+            }
+
+            found = line.find("r");
+            if (found == 0) {
+                found = line.find("=");
+                float r = std::stof(string(line, found + 1, line.size() - 1));
+                point.push_back(r);
+                continue;
+            }
+
+            found = line.find("z");
+            if (found == 0) {
+                found = line.find("=");
+                float z = std::stof(string(line, found + 1, line.size() - 1));
+                point.push_back(z);
+                model.push_back(point);
+                point.clear();
+            }
+
+
+       }
+
+       file.close();
+   }
+
+    //Расчитываем сколько элементов на кажом этаже
+    calculate_stages_number();
+
+    // Координаты антенных элементов в пространстве. В данном случае угол поворота = 0, как и координаты базы
+    calculate_elements_coordinates();
 }
 
 Antenna::Antenna(const Antenna &antenna) :
@@ -49,64 +104,6 @@ Antenna::~Antenna()
 //    free(elements);
 //    free(elementsOnStages);
 
-}
-
-void Antenna::initialization(string &filename)
-{
-    base = vector<float>(DIM,0);
-
-    //Считывание типа антенны
-
-    for (int i = filename.size() - 1; i >= 0; --i)
-        if (filename.at(i) == '/') {
-            name = string(filename, i, filename.size() - 1);
-            break;
-        }
-
-//    // Инициализация антены по ini файлу
-//    bool ok = true;
-//    QSettings antennaSettings(filename, QSettings::IniFormat);
-
-//    quint8 chTotal = antennaSettings.value(QString::fromUtf8("DEFAULT/channels number"), "-1").toInt(&ok);
-
-//    for (quint8 ch = 0; ch < chTotal; ++ch)
-//    {
-
-//        vector<float> point;
-
-//        float alpha = antennaSettings.value(QString::fromUtf8("DEFAULT/alpha%1").arg(ch), "-1").toDouble(&ok);
-//        alpha *= M_PI / 180;
-////            if( ok != true) {
-////                emit error("Error occured while reading from " + filename);
-////                return;
-////            }
-
-//        float radius = antennaSettings.value(QString::fromUtf8("DEFAULT/r%1").arg(ch), "-1").toDouble(&ok);
-////            if( ok != true) {
-////                emit error("Error occured while reading from " + filename);
-////                return;
-////            }
-
-//        float z = antennaSettings.value(QString::fromUtf8("DEFAULT/z%1").arg(ch), "-1").toDouble(&ok);
-////            if( ok != true) {
-////                emit error("Error occured while reading from " + filename);
-////                return;
-////            }
-
-//        float x =radius * cos( alpha);
-//        float y =  radius * sin( alpha);
-
-//        point.push_back(x);
-//        point.push_back(y);
-//        point.push_back(z);
-//        model.push_back(point);
-//    }
-
-    //Расчитываем сколько элементов на кажом этаже
-    calculate_stages_number();
-
-    // Координаты антенных элементов в пространстве. В данном случае угол поворота = 0, как и координаты базы
-    calculate_elements_coordinates();
 }
 
 bool operator==(const Antenna &antenna1, const Antenna &antenna2)
@@ -175,14 +172,14 @@ void Antenna::calculate_stages_number()
 
 void Antenna::set_base( vector< float> coordinates)
 {
-    //Q_ASSERT(coordinates.size() == DIM);
+    assert(coordinates.size() == DIM);
     base = coordinates;
 }
 
 void Antenna::set_orientation(float i_orientation)
 {
     //Проверка предусловий
-   // Q_ASSERT_X((i_orientation < 2*M_PI) || (i_orientation > -2 * M_PI), "Seems that oriantation is in degress, not in radians", "antenna.cpp, set_orientation");
+    assert((i_orientation < 2*M_PI) || (i_orientation > -2 * M_PI));
 
     orientation = i_orientation;
     calculate_elements_coordinates();

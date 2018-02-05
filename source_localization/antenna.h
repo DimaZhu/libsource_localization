@@ -6,6 +6,8 @@
 #include <cmath>
 #include <string>
 #include <cassert>
+#include <iostream>
+#include <fstream>
 
 #define DIM 3
 using namespace std;
@@ -20,8 +22,7 @@ class Antenna
 
 public:
     explicit Antenna();
-    //explicit Antenna( QString &filename);
-    explicit Antenna( char * str);
+    explicit Antenna( string str);
     Antenna(const Antenna &antenna);
     ~Antenna();
 
@@ -52,8 +53,6 @@ public:
 //    static Antenna read_from_file(QTextStream &in);
 
 private:
-
-    void initialization(string &filename);
     void calculate_stages_number();
     void calculate_elements_coordinates();
 

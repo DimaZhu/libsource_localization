@@ -7,6 +7,7 @@
 #include<cmath>
 #include<lh_pel.h>
 #include<grid_pel.h>
+#include<cassert>
 
 typedef vector<double> Peleng;
 

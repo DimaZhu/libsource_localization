@@ -57,10 +57,10 @@ void Pelengator::set_signal_param(double carrier, int i_samp_start, int i_samp_s
 Peleng Pelengator::estimate(SpecFrame *frame)
 {
     //Предусловия
-    Q_ASSERT(frame->get_carrier() != 0 && !std::isnan(frame->get_carrier()));
-    Q_ASSERT(frame->get_sampling_frequency() != 0 && !std::isnan(frame->get_sampling_frequency()));
-    Q_ASSERT(!std::isnan(frame->get_band_width()));
-    Q_ASSERT(frame->get_frequency_resolution() != 0 && !std::isnan(frame->get_frequency_resolution()));
+    assert(frame->get_carrier() != 0 && !std::isnan(frame->get_carrier()));
+    assert(frame->get_sampling_frequency() != 0 && !std::isnan(frame->get_sampling_frequency()));
+    assert(!std::isnan(frame->get_band_width()));
+    assert(frame->get_frequency_resolution() != 0 && !std::isnan(frame->get_frequency_resolution()));
 
     if(verbose)
         printf("\n__Estimating signal parameters__\n");
