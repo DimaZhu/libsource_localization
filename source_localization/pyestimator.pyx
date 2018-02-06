@@ -4,7 +4,6 @@ from libcpp.vector cimport vector
 import numpy as np
 cimport numpy as np
 from libcpp cimport bool
-from cython.operator cimport address
 
 cdef extern from "lh.h":
     cdef cppclass Lh:

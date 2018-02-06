@@ -8,7 +8,7 @@ __author__ = 'Dmitry Zhukov'
 import numpy as np
 import scipy as sp
 import siggen
-from pylh import PyLh_Pel
+from pyestimator import PyLh_Pel
 from dtypes import PySpecFrame
 import grid
 import pyswarm
@@ -60,12 +60,13 @@ def pel_likelihood(signal, ant_coord, peleng, f0):
 
     return likelihood
 
-def arp(atenna, f0, shape):
-    a = 1
+
+# def arp(atenna, f0, shape, peleng = np.zeros(2)):
 
 
 def iarp(antenna, f0, df, fs, f_res, shape, **keywords):
-    """Calculates antenna radiation pattern
+    """Calculates inverse antenna radiation pattern from received signal.
+        This function uses white gaussian noise as received signal.
 
         antenna - object of class Antenna
         peleng - target direction
@@ -92,6 +93,7 @@ def iarp(antenna, f0, df, fs, f_res, shape, **keywords):
         s = siggen.wgn_baseband(antenna, target, N, fs, snr=keywords['snr'])
     else:
         s = siggen.wgn_baseband(antenna, target, N, fs)
+        print(s.shape)
 
     if n_stop > s.shape[1] or n_stop > s.shape[1] / 2:
         raise RuntimeError("signal band is more than fs / 2 ")

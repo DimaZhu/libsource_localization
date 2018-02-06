@@ -47,7 +47,7 @@ public:
     bool is_in_band(int samp) const;
 
     void set_sampling_frequency(double fs);
-    double get_sampling_frequency() const;
+     double get_sampling_frequency() const;
 
     void set_carrier(double f0);
     double get_carrier() const;
