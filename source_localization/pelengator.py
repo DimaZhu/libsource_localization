@@ -11,7 +11,6 @@ import siggen
 from pyestimator import PyLh_Pel
 from dtypes import PySpecFrame
 import grid
-import pyswarm
 from inter import interpolate_min
 
 
@@ -61,11 +60,46 @@ def pel_likelihood(signal, ant_coord, peleng, f0):
     return likelihood
 
 
-# def arp(atenna, f0, shape, peleng = np.zeros(2)):
+def arp(antenna, f0, shape, target):
+    """Calculates direct antenna radiation pattern for array antenna from received signal.
+        This function uses white gaussian noise as received signal.
+
+        antenna - object of class Antenna,
+        f0 - carrier,
+        shape - sizes of output matrix, [elevation_size, azimuth_size],
+        target - target direction array. [azimuth, elevation]"""
+
+    elements = antenna.get_elements()
+    radiation_pattern = np.zeros(shape, dtype=np.complex128)
+    alpha = np.linspace(0, 2 * np.pi, shape[1])
+    betta = np.linspace(-np.pi/2, np.pi/2, shape[0])
+    alpha_grid, betta_grid = np.meshgrid(alpha, betta)
+    wave_number = 2 * np.pi * f0 / 3e8
+
+    # target[0] += np.pi
+    # target[1] += np.pi
+
+    wave_vector_received = wave_number * np.array([np.cos(target[1]) * np.cos(target[0]),
+                                                   np.cos(target[1]) * np.sin(target[0]),
+                                                   np.sin(target[1])])
+
+    for el in range(shape[0]):
+        for az in range(shape[1]):
+
+            # Задержка вносимая фазовращателями
+            wave_vector_phase_shift = wave_number * np.array([np.cos(betta[el]) * np.cos(alpha[az]),
+                                                              np.cos(betta[el]) * np.sin(alpha[az]),
+                                                              np.sin(betta[el])])
+
+            for ch in range(antenna.get_channels_total()):
+                phase = np.matmul(elements[:, ch], (wave_vector_phase_shift - wave_vector_received))
+                radiation_pattern[el, az] += np.exp(1j * phase)
+
+    return radiation_pattern, alpha_grid, betta_grid
 
 
 def iarp(antenna, f0, df, fs, f_res, shape, **keywords):
-    """Calculates inverse antenna radiation pattern from received signal.
+    """Calculates inverse antenna radiation pattern for array antenna from received signal.
         This function uses white gaussian noise as received signal.
 
         antenna - object of class Antenna
@@ -93,7 +127,7 @@ def iarp(antenna, f0, df, fs, f_res, shape, **keywords):
         s = siggen.wgn_baseband(antenna, target, N, fs, snr=keywords['snr'])
     else:
         s = siggen.wgn_baseband(antenna, target, N, fs)
-        print(s.shape)
+
 
     if n_stop > s.shape[1] or n_stop > s.shape[1] / 2:
         raise RuntimeError("signal band is more than fs / 2 ")

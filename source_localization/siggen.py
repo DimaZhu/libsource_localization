@@ -123,7 +123,6 @@ import configparser
 
 def wgn_baseband(antenna, target, length, fs, **keywords):
     from scipy.stats import norm
-    import scipy.fftpack as fft
 
     if len(target.shape) is 1:
         target = np.array([target])
@@ -133,7 +132,7 @@ def wgn_baseband(antenna, target, length, fs, **keywords):
         target = target.transpose()
 
     N = antenna.get_channels_total()
-    A = antenna.get_elements().transpose()
+    A = antenna.get_elements()
     T = np.matmul(target, np.ones((1, N)))
     r = np.sqrt(np.matmul(np.ones((1, 3)), (A - T) ** 2))
     tau = r.T / 3e8
@@ -148,7 +147,14 @@ def wgn_baseband(antenna, target, length, fs, **keywords):
         scale = 1 / (10**(keywords['snr'] / 20))
         s_f += norm.rvs(size=(N, length), scale=scale) + 1j*norm.rvs(size=(N, length), scale=scale)
 
-    return s_f, tau
+    if 'get_tau' in keywords:
+        if keywords['get_tau']:
+            return s_f, tau
+        else:
+            return s_f
+    else:
+        return  s_f
+
 
 
 def delay(signal, tau, fs):

@@ -60,7 +60,7 @@ cdef class PyAntenna:
 
         el_list = self.c_ant.get_model()
         el_arr = np.asarray(el_list)
-        return el_arr
+        return el_arr.transpose()
 
     def get_elements(self):
 
@@ -69,7 +69,7 @@ cdef class PyAntenna:
 
         el_list = self.c_ant.get_elements()
         el_arr = np.asarray(el_list)
-        return el_arr
+        return el_arr.transpose()
 
     def get_base(self):
 

@@ -37,7 +37,8 @@ Antenna::Antenna(string str):
    ifstream file(filename);
    if (file.is_open())
    {
-       vector<float> point;
+       // Вектор в цилиндрической системе координат
+       vector<float> point_cylindre;
 
        while(getline (file, line))
        {
@@ -45,7 +46,7 @@ Antenna::Antenna(string str):
             if (found == 0) {
                 found = line.find("=");
                 float alpha = std::stof(std::string(line, found + 1, line.size() - 1));
-                point.push_back(alpha);
+                point_cylindre.push_back(alpha);
                 continue;
             }
 
@@ -53,7 +54,7 @@ Antenna::Antenna(string str):
             if (found == 0) {
                 found = line.find("=");
                 float r = std::stof(string(line, found + 1, line.size() - 1));
-                point.push_back(r);
+                point_cylindre.push_back(r);
                 continue;
             }
 
@@ -61,9 +62,14 @@ Antenna::Antenna(string str):
             if (found == 0) {
                 found = line.find("=");
                 float z = std::stof(string(line, found + 1, line.size() - 1));
-                point.push_back(z);
-                model.push_back(point);
-                point.clear();
+                point_cylindre.push_back(z);
+                vector<float> point_decart;
+
+                point_decart.push_back(cos(point_cylindre[0] * M_PI / 180) * point_cylindre[1]);
+                point_decart.push_back(sin(point_cylindre[0] * M_PI / 180) * point_cylindre[1]);
+                point_decart.push_back(point_cylindre[2]);
+                model.push_back(point_decart);
+                point_cylindre.clear();
             }
 
 
