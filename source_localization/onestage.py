@@ -1,4 +1,5 @@
 import numpy as np
+import siggen
 
 def likelihood_nb(signal, ant_coord, peleng, f0):
     likelihood = 0
@@ -18,7 +19,7 @@ def likelihood_nb(signal, ant_coord, peleng, f0):
             for k in range(k_max):
                 amp = np.abs(signal[m, k]) * np.abs(signal[l, k])
                 delta_phz = np.angle(signal[l, k]) - np.angle(signal[m, k])
-                sum_sin += amp * np.sin(delta_phz)
+                sum_sin += amp * np.sin(delta_phz)-
                 sum_cos += amp * np.cos(delta_phz)
                 sum_amp += signal[m, k] * np.conj(signal[l, k])
 
@@ -32,6 +33,7 @@ def likelihood_nb(signal, ant_coord, peleng, f0):
 
     return likelihood
 
+
 class Lh_Wb:
     def __init__(self, antenna_system, specframe, samp_start, samp_stop):
         self.antenna_system = antenna_system
@@ -39,7 +41,6 @@ class Lh_Wb:
         self.samp_start = samp_start
         self.samp_stop = samp_stop
         self.data = specframe.get_python_data
-
 
     def calc(self, r):
 
@@ -65,6 +66,33 @@ class Lh_Wb:
                         lh += np.abs(mutual_amp)
 
         return lh
+
+
+def wb_map(self, antenna_system, f0, df, fs, f_res, field_bound, map_shape, target):
+    """wb_map function return maximum likelihood surface for map with bounds defined in
+     field_bound = [[x_min x_max], [y_min, y_max]]
+     """
+
+    map = np.zeros(map_shape)
+    x_line = np.linspace(field_bound[0][0], field_bound[0][1], map_shape[0])
+    y_line = np.linspace(field_bound[1][0], field_bound[1][1], map_shape[1])
+    x_grid, y_grid = np.meshgrid((x_line,y_line))
+
+    sig_length = int(fs/f_res)
+    n_stop = int(np.ceil((f0 - df/2) / f_res))
+    n_start = int(np.floor((f0 + df/2) / f_res))
+
+    if n_stop == n_start:
+        n_stop +=1
+
+    s = siggen.wgn_baseband(antenna, target, N, fs)
+
+    return map, x_grid, y_grid
+
+
+
+
+
 
 
 

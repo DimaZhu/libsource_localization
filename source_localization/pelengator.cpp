@@ -57,7 +57,7 @@ void Pelengator::set_signal_param(double carrier, int i_samp_start, int i_samp_s
 Peleng Pelengator::estimate(SpecFrame *frame)
 {
     //Предусловия
-    assert(frame->get_carrier() != 0 && !std::isnan(frame->get_carrier()));
+    assert(frame->get_central_frequency() != 0 && !std::isnan(frame->get_central_frequency()));
     assert(frame->get_sampling_frequency() != 0 && !std::isnan(frame->get_sampling_frequency()));
     assert(!std::isnan(frame->get_band_width()));
     assert(frame->get_frequency_resolution() != 0 && !std::isnan(frame->get_frequency_resolution()));
@@ -66,12 +66,12 @@ Peleng Pelengator::estimate(SpecFrame *frame)
         printf("\n__Estimating signal parameters__\n");
 
 
-    vector<double> estimation;
+    Peleng estimation;
 
    //Расчет матрицы функции правдоподобия
     lh_matrix.clear();
 
-    Lh_Pel lh(&antenna, frame, samp_start, samp_stop);
+    LhPel lh(&antenna, frame, samp_start, samp_stop);
     Lh *lh_ptr = &lh;
 
     for (uint i = 0; i < coord_grid[0].size(); ++i)
@@ -109,6 +109,7 @@ Peleng Pelengator::estimate(SpecFrame *frame)
 
     double alpha_min;
     double betta_min;
+    double lh_min;
 
     if (interpolation) {
 
@@ -131,14 +132,17 @@ Peleng Pelengator::estimate(SpecFrame *frame)
         if (lh_min_int < lh_min_enum) {
             alpha_min = alpha_min_int;
             betta_min = betta_min_int;
+            lh_min = lh_min_int;
         } else {
             alpha_min = alpha_min_enum;
             betta_min = betta_min_enum;
+            lh_min = lh_min_enum;
         }
 
     } else {
         alpha_min = alpha_min_enum;
         betta_min = betta_min_enum;
+        lh_min = lh_min_enum;
     }
 
 
@@ -150,8 +154,11 @@ Peleng Pelengator::estimate(SpecFrame *frame)
     if (verbose)
         printf("Lh at precise min: %f\n",abs(lh(starting_point)));
 
-    estimation.push_back(starting_point(0));
-    estimation.push_back(starting_point(1));
+    estimation.azimuth = starting_point(0);
+    estimation.elevation = starting_point(1);
+    estimation.probability = abs(lh_min);
+    estimation.phase_center = antenna.get_phase_center();
+
     return estimation;
 }
 
@@ -160,7 +167,7 @@ void Pelengator::turn_on_interpolation(bool turn_on)
     interpolation = turn_on;
 }
 
-bool Pelengator::isActive()
+bool Pelengator::is_active()
 {
     return active;
 }

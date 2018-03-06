@@ -19,45 +19,36 @@ cdef extern from "antenna.h" nogil:
         # seters
         void set_model(vector[ vector[float]] coordinates)
         void set_base(vector[float]  coordinates)
+        void set_base(vector[vector[float]] coord)
+        void set_phase_center(vector[float] coord)
+        void set_phase_center(vector[vector[float]] coord)
         void set_orientation(float i_orientation)
+        void set_name(string name)
 
         # geters
         vector[vector[float]] get_model() const
         vector[vector[float]] get_elements() const
-        vector[float] get_base() const
+        vector[vector[float]] get_base() const
+        vector[vector[float]] get_phase_center() const
 
         vector[float] get_elements_on_stages() const
         float get_orientation() const
         int get_channels_total() const
+
+    cdef cppclass coordinates
 
 
 cdef class PyAntenna:
     cdef Antenna *c_ant
 
 
-cdef object PyAntenna_factory(Antenna *ptr)
+cdef object py_antenna_factory(Antenna *ptr)
 
 
-cdef Antenna *Antenna_factory(PyAntenna ant)
+cdef Antenna *antenna_factory(PyAntenna ant)
 
 
-cdef extern from "complex.h" namespace "std":
- cdef extern from "profiler.h" nogil:
-    cdef cppclass Profiler:
-        Profiler()
-       # void start(QString name)
-        # void stop(QString name)
-        void clear()
-        Profile get_profile()
-
-cdef extern from "profile.h" nogil:
-    cdef cppclass Profile:
-        Profile_entity()
-        int time_total
-        int time_aver
-        int count
-        float time_percentage
-
+# cdef extern from "complex.h" namespace "std":
 
 cdef extern from "specframe.h" nogil:
     cdef cppclass SpecFrame:
@@ -65,25 +56,20 @@ cdef extern from "specframe.h" nogil:
         SpecFrame(SpecFrame &frame)
 
         const SpecFrame &operator=(SpecFrame& frame)
-        complex2d *get_data(int &channels, int &samp_per_ch)
-        complex2d *get_data()
-        void set_data(complex2d *new_data_ptr, int i_channels_total, int i_samp_per_ch)
+        const complex2d get_data(int &channels, int &samp_per_ch) const
+        const complex2d get_data() const
         void filter(complex2d *freq_response)
 
-        void clear()
         void erase()
 
         int ind(int samp) const
 
         bool is_band_limited() const
 
-        void set_sampling_frequency(double fs)
         double get_sampling_frequency() const
 
-        void set_carrier(double f0)
-        double get_carrier() const
+        double get_central_frequency() const
 
-        void set_frequency_resolution(double f_res)
         double get_frequency_resolution() const
 
         double get_band_width() const
@@ -94,20 +80,28 @@ cdef extern from "specframe.h" nogil:
 
         int get_full_frame_length() const
 
-        void set_post_id(int id)
         int get_post_id() const
 
-        void set_count(int )
         int get_count() const
 
-        void set_bound(int bound)
         int get_bound() const
 
-        Profiler profile
 
 cdef class PySpecFrame:
     cdef SpecFrame *c_frame
-    cdef void set_python_data(self, np.ndarray[np.complex128_t, ndim=2] data)
+    # cdef void set_python_data(self, np.ndarray[np.complex128_t, ndim=2] data)
     cdef np.ndarray[np.complex128_t, ndim=2] get_python_data(self)
 
-cdef SpecFrame *SpecFrame_factory(PySpecFrame frame)
+cdef SpecFrame *spec_frame_factory(PySpecFrame frame)
+cdef PySpecFrame py_spec_frame_factory(SpecFrame *frame)
+
+cdef extern from "specframereader.h" nogil:
+    cdef cppclass SpecFrameReader:
+        SpecFrameReader(int post_id = -1);
+        bool open(string);
+        void read(SpecFrame*);
+        void close();
+
+cdef class PyFrameReader:
+    cdef SpecFrameReader c_reader
+    cdef SpecFrame *c_frame

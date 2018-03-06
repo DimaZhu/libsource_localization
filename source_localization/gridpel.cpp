@@ -1,4 +1,4 @@
-#include "grid_pel.h"
+#include "gridpel.h"
 
 
 vector<vector<vector<double>>> generate_grid(Antenna ant, float f_max)
@@ -60,16 +60,16 @@ vector<vector<vector<double>>> generate_grid(Antenna ant, float f_max)
     float x_max = ant_el[0][0];
 //    float y_min = ant_el[0][1];
 //    float y_max = ant_el[0][1];
-    float z_min = ant_el[0][2];
-    float z_max = ant_el[0][2];
+    float z_min = ant_el[2][0];
+    float z_max = ant_el[2][0];
 
     for (int ch = 0; ch < ant.get_channels_total(); ++ch)
     {
-        if(ant_el[ch][0] < x_min)
-            x_min = ant_el[ch][0];
+        if(ant_el[0][ch] < x_min)
+            x_min = ant_el[0][ch];
 
-        if(ant_el[ch][0] > x_max)
-            x_max = ant_el[ch][0];
+        if(ant_el[0][ch] > x_max)
+            x_max = ant_el[0][ch];
 
 //        if(ant_el[ch][1] < y_min)
 //            y_min = ant_el[ch][1];
@@ -77,11 +77,11 @@ vector<vector<vector<double>>> generate_grid(Antenna ant, float f_max)
 //        if(ant_el[ch][1] > y_max)
 //            y_max = ant_el[ch][1];
 
-        if(ant_el[ch][2] < z_min)
-            z_min = ant_el[ch][2];
+        if(ant_el[2][ch] < z_min)
+            z_min = ant_el[2][ch];
 
-        if(ant_el[ch][2] > z_max)
-            z_max = ant_el[ch][2];
+        if(ant_el[2][ch] > z_max)
+            z_max = ant_el[2][ch];
     }
 
     float alpha_width = 3e8/f_max/(x_max - x_min)/2;
@@ -95,8 +95,8 @@ vector<vector<vector<double>>> generate_grid(Antenna ant, float f_max)
 
     float alpha_start = 0 - alpha_step;
     float alpha_stop = 2 * M_PI + alpha_step;
-    float betta_start = - betta_step;
-    float betta_stop = M_PI/2 + betta_step;
+    float betta_start = -M_PI/2; // - betta_step;
+    float betta_stop = M_PI/2; // + betta_step;
 
     vector<vector<double>> betta_grid;
     vector<vector<double>> alpha_grid;

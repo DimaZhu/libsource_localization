@@ -9,6 +9,7 @@ QT       -= gui
 TARGET = source_localization
 TEMPLATE = lib
 CONFIG += c++11
+QMAKE_CXXFLAGS += -Wno-ignored-qualifiers
 
 DEFINES += SOURCE_LOCALIZATION2_LIBRARY
 
@@ -29,32 +30,38 @@ INCLUDEPATH += /usr/include/python3.5m/\
                             /usr/lib64/python3.5/site-packages/numpy/core/include/\
 
 
-
 SOURCES += \
     specframe.cpp \
     pelengator.cpp \
-    lh_pel.cpp \
-    dtypes.cpp \
     antenna.cpp \
     interpolator.cpp \
     lh.cpp \
-    profiler.cpp \
-    profile.cpp \
-    profile_analizer.cpp \
-    grid_pel.cpp
+    estimator.cpp \
+    peleng.cpp \
+    triangulator.cpp \
+    specframewriter.cpp \
+    phaseestimator.cpp \
+    ampestimator.cpp \
+    lhpel.cpp \
+    gridpel.cpp \
+    specframesaver.cpp
 
 HEADERS += \
     antenna.h \
-    lh_pel.h \
     pelengator.h \
     source_localization_global.h \
     specframe.h \
     interpolator.h \
     lh.h \
-    profiler.h \
-    profile.h \
-    profile_analizer.h \
-    grid_pel.h
+    estimator.h \
+    peleng.h \
+    triangulator.h \
+    specframewriter.h \
+    phaseestimator.h \
+    specframesaver.h \
+    ampestimator.h \
+    lhpel.h \
+    gridpel.h
 
 unix {
     target.path = /usr/lib

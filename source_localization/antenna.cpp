@@ -6,6 +6,7 @@ Antenna::Antenna():
     name("NO NAME")
 {
     base = vector<float>(DIM,0);
+    phase_center_model = vector<float>(DIM,0);
 }
 
 
@@ -16,6 +17,7 @@ Antenna::Antenna(string str):
 
     string filename(str);
     base = vector<float>(DIM,0);
+    phase_center_model = vector<float>(DIM,0);
 
     //Считывание типа антенны
 
@@ -37,24 +39,50 @@ Antenna::Antenna(string str):
    ifstream file(filename);
    if (file.is_open())
    {
-       // Вектор в цилиндрической системе координат
-       vector<float> point_cylindre;
+
+       vector<float> x_vec;
+       vector<float> y_vec;
+       vector<float> z_vec;
 
        while(getline (file, line))
        {
-            std::size_t found = line.find("alpha");
+           std::size_t found = line.find("center_x");
+           if (found == 0) {
+               found = line.find("=");
+               float x= std::stof(std::string(line, found + 1, line.size() - 1));
+               phase_center_model.push_back(x);
+               continue;
+           }
+
+           found = line.find("center_y");
+           if (found == 0) {
+               found = line.find("=");
+               float y= std::stof(std::string(line, found + 1, line.size() - 1));
+               phase_center_model.push_back(y);
+               continue;
+           }
+
+          found = line.find("center_z");
+           if (found == 0) {
+               found = line.find("=");
+               float z= std::stof(std::string(line, found + 1, line.size() - 1));
+               phase_center_model.push_back(z);
+               continue;
+           }
+
+             found = line.find("x");
             if (found == 0) {
                 found = line.find("=");
-                float alpha = std::stof(std::string(line, found + 1, line.size() - 1));
-                point_cylindre.push_back(alpha);
+                float x= std::stof(std::string(line, found + 1, line.size() - 1));
+                x_vec.push_back(x);
                 continue;
             }
 
-            found = line.find("r");
+            found = line.find("y");
             if (found == 0) {
                 found = line.find("=");
-                float r = std::stof(string(line, found + 1, line.size() - 1));
-                point_cylindre.push_back(r);
+                float y = std::stof(string(line, found + 1, line.size() - 1));
+                y_vec.push_back(y);
                 continue;
             }
 
@@ -62,18 +90,13 @@ Antenna::Antenna(string str):
             if (found == 0) {
                 found = line.find("=");
                 float z = std::stof(string(line, found + 1, line.size() - 1));
-                point_cylindre.push_back(z);
-                vector<float> point_decart;
-
-                point_decart.push_back(cos(point_cylindre[0] * M_PI / 180) * point_cylindre[1]);
-                point_decart.push_back(sin(point_cylindre[0] * M_PI / 180) * point_cylindre[1]);
-                point_decart.push_back(point_cylindre[2]);
-                model.push_back(point_decart);
-                point_cylindre.clear();
+                z_vec.push_back(z);
             }
-
-
        }
+
+       model.push_back(x_vec);
+       model.push_back(y_vec);
+       model.push_back(z_vec);
 
        file.close();
    }
@@ -89,6 +112,7 @@ Antenna::Antenna(const Antenna &antenna) :
     orientation(0)
 {
     base = vector<float>(DIM,0);
+    phase_center_model = vector<float>(DIM,0);
 
     set_model(antenna.get_model());
 
@@ -143,6 +167,7 @@ void Antenna::set_model(vector<vector<float> > coordinates)
 {
     // Удаляем предыдущие данные
     elementsOnStages.clear();
+    model.clear();
 
     // Присваиваем
     model = coordinates;
@@ -163,13 +188,13 @@ void Antenna::calculate_stages_number()
 
     elementsOnStages.clear();
 
-    float height = model[0][2];
+    float height = model[2][0];
 
     // Количество элементов на этажах
     for (int ch = 0; ch < get_channels_total(); ++ch)
     {
-        if (height != model[ch][2]) {
-            height = model[ch][2];
+        if (height != model[2][ch]) {
+            height = model[2][ch];
             elementsOnStages.push_back(ch + 1);
         }
 
@@ -180,8 +205,18 @@ void Antenna::set_base( vector< float> coordinates)
 {
     assert(coordinates.size() == DIM);
     base = coordinates;
+
+    calculate_elements_coordinates();
 }
 
+void Antenna::set_base(vector<vector<float> > coordinates)
+{
+    base[0] = coordinates[0][0];
+    base[1] = coordinates[1][0];
+    base[2] = coordinates[2][0];
+
+    calculate_elements_coordinates();
+}
 void Antenna::set_orientation(float i_orientation)
 {
     //Проверка предусловий
@@ -195,19 +230,31 @@ void Antenna::calculate_elements_coordinates()
 {
     // Удаляем предыдущие данные
     elements.clear();
+    phase_center_real.clear();
 
     // Считаем
+    vector <float> x_vec;
+    vector <float> y_vec;
+    vector <float> z_vec;
+
+    phase_center_real.push_back(phase_center_model[0] * cos( orientation ) - phase_center_model[1] * sin(orientation) + base[0]);
+    phase_center_real.push_back(phase_center_model[0] * sin( orientation) + phase_center_model[1] * cos(orientation) + base[1]);
+    phase_center_real.push_back(phase_center_model[2] + base[2]);
+
     for (int ch = 0; ch < get_channels_total(); ++ch)
     {
-        float x = model[ch][0] * cos( orientation ) - model[ch][1] * sin(orientation) + base[0];
-        float y = model[ch][0] * sin( orientation) + model[ch][1] * cos(orientation) + base[1];
-        float z = model[ch][2] + base[2];
-        vector<float > point;
-        point.push_back(x);
-        point.push_back(y);
-        point.push_back(z);
-        elements.push_back(point);
+        float x = model[0][ch] * cos( orientation ) - model[1][ch] * sin(orientation) + base[0];
+        float y = model[0][ch] * sin( orientation) + model[1][ch] * cos(orientation) + base[1];
+        float z = model[2][ch] + base[2];
+
+        x_vec.push_back(x);
+        y_vec.push_back(y);
+        z_vec.push_back(z);
     }
+
+    elements.push_back(x_vec);
+    elements.push_back(y_vec);
+    elements.push_back(z_vec);
 }
 
 vector< vector< float> > Antenna::get_model() const
@@ -216,10 +263,18 @@ vector< vector< float> > Antenna::get_model() const
 }
 
 
-vector<float> Antenna::get_base() const
+vector<vector<float> > Antenna::get_base() const
 {
 
-    return base;
+    vector<vector<float>> output;
+    vector<float> x(base.begin(), base.begin() + 1);
+    vector<float> y(base.begin() + 1, base.begin() + 2);
+    vector<float> z(base.begin() + 2, base.end());
+
+    output.push_back(x);
+    output.push_back(y);
+    output.push_back(z);
+    return output;
 }
 
 
@@ -243,13 +298,13 @@ bool Antenna::adjust_elements_coordinates(vector< vector< float> > correction)
     // Присваиваем
     for (size_t ch = 0; ch < correction.size(); ++ch)
     {
-       float x = elements[ch][0] + correction[ch][0];
-       float y = elements[ch][1] + correction[ch][1];
-       float z = elements[ch][2] + correction[ch][2];
+       float x = elements[0][ch] + correction[0][ch];
+       float y = elements[1][ch] + correction[1][ch];
+       float z = elements[2][ch] + correction[2][ch];
 
-       elements[ch][0] = x;
-       elements[ch][1] = y;
-       elements[ch][2] = z;
+       elements[0][ch] = x;
+       elements[1][ch] = y;
+       elements[2][ch] = z;
 
     }
 
@@ -263,7 +318,7 @@ void Antenna::set_name(string  i_name)
 
 int Antenna::get_channels_total() const
 {
-    return model.size();
+    return model[0].size();
 }
 
 string Antenna::get_name() const
@@ -337,4 +392,36 @@ float Antenna::get_orientation() const
 //    return antenna;
 //}
 
+void Antenna::set_phase_center(vector<float> center)
+{
+    if (center.size() == 3) {
+        phase_center_model = center;
+        calculate_elements_coordinates();
+    }
 
+
+}
+
+void Antenna::set_phase_center(vector< vector<float> > center)
+{
+    if (center.size() == 3) {
+        phase_center_model[0] = center[0][0];
+        phase_center_model[1] = center[1][0];
+        phase_center_model[2] = center[2][0];
+
+        calculate_elements_coordinates();
+    }
+}
+
+vector<vector<float>> Antenna::get_phase_center() const
+{
+    vector<vector<float>> output;
+    vector<float> x(phase_center_real.begin(), phase_center_real.begin() + 1);
+    vector<float> y(phase_center_real.begin() + 1, phase_center_real.begin() + 2);
+    vector<float> z(phase_center_real.begin() + 2, phase_center_real.end());
+
+    output.push_back(x);
+    output.push_back(y);
+    output.push_back(z);
+    return output;
+}

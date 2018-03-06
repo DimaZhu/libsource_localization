@@ -5,11 +5,11 @@
 #include<specframe.h>
 #include<interpolator.h>
 #include<cmath>
-#include<lh_pel.h>
-#include<grid_pel.h>
+#include<lhpel.h>
+#include<gridpel.h>
 #include<cassert>
-
-typedef vector<double> Peleng;
+#include <estimator.h>
+#include <peleng.h>
 
 using namespace std;
 class Pelengator
@@ -23,7 +23,7 @@ public:
     void set_signal_param(double carrier, int  i_samp_start, int i_samp_stop);
     Peleng estimate(SpecFrame *frame);
     void turn_on_interpolation(bool turn_on);
-    bool isActive();
+    bool is_active();
     void turn_on(bool);
     void set_verbose(bool );
 private:
@@ -40,6 +40,5 @@ private:
     int samp_stop;
 
 };
-
 
 #endif // PELENGATOR_H

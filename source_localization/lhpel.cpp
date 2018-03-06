@@ -1,12 +1,12 @@
-#include "lh_pel.h"
+#include "lhpel.h"
 
-Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop, bool verbose)
+LhPel::LhPel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop, bool verbose)
 {
 
         ant_pairs = ant->get_channels_total() * (ant->get_channels_total()-1) / 2;
-        double wave_length = 3e8 / data->get_carrier();
+        double wave_length = 3e8 / data->get_central_frequency();
         ang_freq = 2 * M_PI  / wave_length;
-        complex2d * sig_ptr  = data->get_data();
+        complex2d signal  = data->get_data();
 
         if (samp_start >= data->get_length())
             samp_start = data->get_length() - 1;
@@ -14,28 +14,29 @@ Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop, boo
         if (samp_stop >= data->get_length())
             samp_stop = data->get_length() - 1;
 
+        vector<vector<float>> ant_coord = ant->get_elements();
+
         if (verbose){
-                vector<vector<float>> ant_coord = ant->get_elements();
                 printf("Amplitudes:\n");
                 for (int j = 0; j < data->get_length(); ++j)
                     for (int i = 0; i < ant->get_channels_total(); ++i )
-                        printf("%f,  ", abs((*sig_ptr)[i][j]));
+                        printf("%f,  ", abs(signal[i][j]));
 
                 printf("\n\nPhases:\n");
                 for (int j = 0; j < data->get_length(); ++j)
                     for (int i = 0; i < ant->get_channels_total(); ++i )
-                        printf("%f,  ", arg((*sig_ptr)[i][j]));
+                        printf("%f,  ", arg(signal[i][j]));
 
                 printf("\n\nElements Coordinates:");
                 for (int i = 0; i < ant->get_channels_total(); ++i )
                 {
                     printf("\n");
                         for (int j = 0; j < DIM; ++j)
-                        printf("%f,  ", ant_coord[i][j]);
+                        printf("%f,  ", ant_coord[j][i]);
                 }
 
                 printf("\nSignal indexes: [%i, %i]\n", samp_start, samp_stop);
-                printf("\nSignal length:  %d\nElements total: %d\nCarrier: %e\n\n\n\n", data->get_length(), ant->get_channels_total(), data->get_carrier());
+                printf("\nSignal length:  %d\nElements total: %d\nCarrier: %e\n\n\n\n", data->get_length(), ant->get_channels_total(), data->get_central_frequency());
 
         }
 
@@ -50,12 +51,12 @@ Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop, boo
             {
                 double sum_sin = 0;
                 double sum_cos = 0;
-                complex<double> sum_amp = 0;
+                std::complex< double > sum_amp = 0;
 
                 for (int samp = samp_start; samp <= samp_stop; ++samp)
                 {
-                    amp_temp =  abs((*sig_ptr)[m][samp]) * abs((*sig_ptr)[l][samp]);
-                    phase_temp = arg((*sig_ptr)[m][samp]) - arg((*sig_ptr)[l][samp]);
+                    amp_temp =  abs(signal[m][samp]) * abs(signal[l][samp]);
+                    phase_temp = arg(signal[m][samp]) - arg(signal[l][samp]);
                     sum_sin += amp_temp * sin(phase_temp);
                     sum_cos += amp_temp * cos(phase_temp);
                     complex<double> exp = cexp(1i * phase_temp);
@@ -69,9 +70,8 @@ Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop, boo
                 lh_max +=mutual_amp[pair];
 
                 std::vector<float> buffer;
-                std::vector< std::vector <float>> antenna_coordinates = ant->get_elements();
                 for (int d = 0; d < DIM; ++d)
-                    buffer.push_back(antenna_coordinates[m][d] - antenna_coordinates[l][d]);
+                    buffer.push_back(ant_coord[d][m] - ant_coord[d][l]);
                  coord_delta.push_back(buffer);
                 ++pair;
 
@@ -81,7 +81,7 @@ Lh_Pel::Lh_Pel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop, boo
 }
 
 
-double Lh_Pel::calculate(double alpha, double betta) const
+double LhPel::calculate(double alpha, double betta) const
 {
     double lh = 0;
     double r[3] = {cos(betta) * cos(alpha), cos(betta) * sin(alpha), sin(betta)};
@@ -97,7 +97,7 @@ double Lh_Pel::calculate(double alpha, double betta) const
     return lh;
 }
 
-double Lh_Pel::operator ()( const parameters_vector &arg) const
+double LhPel::operator ()( const parameters_vector &arg) const
 {
     return calculate(arg(0), arg(1));
 }

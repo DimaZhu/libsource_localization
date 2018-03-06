@@ -10,7 +10,6 @@ import scipy as sp
 import siggen
 from pyestimator import PyLh_Pel
 from dtypes import PySpecFrame
-import grid
 from inter import interpolate_min
 
 
@@ -18,11 +17,12 @@ from inter import interpolate_min
 def peleng(antenna, target):
     """ calculate pelengs from antenna to target"""
     import numpy as np
-    dr = target - antenna.base
-    alpha = np.arctan(dr[1, 0] / dr[0, 0])
+    phase_center = antenna.get_phase_center()
+    dr = phase_center - target
+    alpha = np.angle(dr[0, 0] + 1j * dr[1, 0])
 
-    rxy = np.sqrt((target[0, 0] - antenna.base[0, 0])**2 + (target[1, 0] - antenna.base[1, 0])**2)
-    thetta = np.angle(rxy + 1j * (target[2, 0] - antenna.base[2, 0]))
+    rxy = np.sqrt((target[0, 0] - phase_center[0, 0])**2 + (target[1, 0] - phase_center[1, 0])**2)
+    thetta = np.angle(rxy + 1j * (target[2, 0] - phase_center[2, 0]))
     peleng = np.array([alpha, thetta])
     return peleng
 
@@ -70,7 +70,7 @@ def arp(antenna, f0, shape, target):
         target - target direction array. [azimuth, elevation]"""
 
     elements = antenna.get_elements()
-    radiation_pattern = np.zeros(shape, dtype=np.complex128)
+    radiation_pattern = np.zeros(shape)
     alpha = np.linspace(0, 2 * np.pi, shape[1])
     betta = np.linspace(-np.pi/2, np.pi/2, shape[0])
     alpha_grid, betta_grid = np.meshgrid(alpha, betta)
@@ -90,10 +90,12 @@ def arp(antenna, f0, shape, target):
             wave_vector_phase_shift = wave_number * np.array([np.cos(betta[el]) * np.cos(alpha[az]),
                                                               np.cos(betta[el]) * np.sin(alpha[az]),
                                                               np.sin(betta[el])])
-
+            accum = 0
             for ch in range(antenna.get_channels_total()):
                 phase = np.matmul(elements[:, ch], (wave_vector_phase_shift - wave_vector_received))
-                radiation_pattern[el, az] += np.exp(1j * phase)
+                accum += np.exp(1j * phase)
+
+            radiation_pattern[el, az] = np.abs(accum)
 
     return radiation_pattern, alpha_grid, betta_grid
 
