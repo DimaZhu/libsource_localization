@@ -7,8 +7,6 @@ class SpecFrameWriter
 {
 public:
     SpecFrameWriter(){}
-
-protected:
     void write_sampling_frequency(SpecFrame *frame, double fs) {frame->sampling_frequency = fs; }
     void write_central_frequency(SpecFrame *frame, double f0) {frame->f0 = f0;}
     void write_frequency_resolution(SpecFrame *frame, double f_res) {frame->freq_resolution = f_res;}

@@ -7,7 +7,7 @@
 class  LhPel : public Lh
 {
 public:
-    LhPel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop, bool verbose = false);
+    LhPel(Antenna *ant, SpecFrame const * const data, int samp_start, int samp_stop, bool verbose = false);
 
     double operator() (const parameters_vector& arg) const;
     double calculate(double alpha, double betta) const;

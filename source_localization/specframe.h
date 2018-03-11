@@ -10,7 +10,7 @@
 #undef complex
 using namespace std;
 typedef  std::complex<float >const  *const *const complex2d;
-typedef  std::complex<float > *complex1d;
+typedef  std::complex<float > const * const complex1d;
 
 class SpecFrameParent
 {

@@ -9,8 +9,7 @@ class Estimator
 {
 public:
     Estimator();
-    virtual Estimation estimate(SpecFrame *frame) const = 0;
-
+    virtual Estimation estimate(SpecFrame const * const frame) const = 0;
 };
 
 #endif // ESTIMATOR_H

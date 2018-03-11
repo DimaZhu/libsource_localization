@@ -1,8 +1,9 @@
-from dtypes cimport *
+cimport source_localization_headers as src
 
 
 from libcpp.vector cimport vector
 from libcpp.string cimport  string
+from libcpp cimport bool
 import numpy as np
 cimport numpy as np
 from libc.stdlib cimport malloc, free
@@ -10,12 +11,12 @@ from cython.operator cimport dereference, address
 import configparser
 import plotly.offline as plt
 import plotly.graph_objs as go
-
+import copy
 
 np.import_array()
 
-
-cdef class PyAntenna:
+cdef class Antenna:
+    cdef src.Antenna *c_ant
     def __cinit__(self,):
         self.c_ant = NULL
 
@@ -28,7 +29,7 @@ cdef class PyAntenna:
         if self.c_ant is not NULL:
             del self.c_ant
 
-        self.c_ant = new Antenna(c_str)
+        self.c_ant = new src.Antenna(c_str)
 
     def __dealoc__(self):
         if self.c_ant is not NULL:
@@ -48,7 +49,7 @@ cdef class PyAntenna:
         """
 
         if self.c_ant is NULL:
-            self.c_ant = new Antenna()
+            self.c_ant = new src.Antenna()
 
         cdef vector[vector[float]] c_coord = coord
         self.c_ant.set_model(c_coord)
@@ -59,7 +60,7 @@ cdef class PyAntenna:
         cdef vector[vector[float]] c_coord2d
 
         if self.c_ant is NULL:
-            self.c_ant = new Antenna()
+            self.c_ant = new src.Antenna()
 
         if len(coord.shape) is 1:
             c_coord1d = coord
@@ -77,7 +78,7 @@ cdef class PyAntenna:
         cdef vector[vector[float]] c_coord2d
 
         if self.c_ant is NULL:
-            self.c_ant = new Antenna()
+            self.c_ant = new src.Antenna()
 
         if len(coord.shape) is 1:
             c_coord1d = coord
@@ -90,7 +91,7 @@ cdef class PyAntenna:
     def set_orientation(self, float val):
 
         if self.c_ant is NULL:
-            self.c_ant = new Antenna()
+            self.c_ant = new src.Antenna()
 
         self.c_ant.set_orientation(val)
 
@@ -229,13 +230,13 @@ cdef class PyAntenna:
         with open(filename, 'w') as configfile:
             config.write(configfile)
 
-cdef object py_antenna_factory(Antenna *ptr):
-    cdef PyAntenna py_ant = PyAntenna()
+cdef object py_antenna_factory(src.Antenna *ptr):
+    cdef Antenna py_ant = Antenna()
     py_ant.c_ant = ptr
     return py_ant
 
-cdef Antenna *antenna_factory(PyAntenna ant):
-    cdef Antenna * a = ant.c_ant
+cdef src.Antenna *antenna_factory(Antenna ant):
+    cdef src.Antenna * a = ant.c_ant
     return a
 
 
@@ -270,7 +271,7 @@ class AntennaSystem:
             base[2] = float(antenna_system_config['Post' + str(i)]['z'])
             orientation = float(antenna_system_config['Post' + str(i)]['orientation'])
 
-            antenna = PyAntenna()
+            antenna = Antenna()
             antenna.load(path_to_dir + ant_model + '.ini')
             antenna.set_base(base)
             antenna.set_orientation(orientation)
@@ -324,16 +325,17 @@ class AntennaSystem:
        plt.plot(data)
 
 
-cdef class PySpecFrame:
+cdef class SpecFrame:
+    cdef src.SpecFrame *c_frame
     def __cinit__(self, channels_total = 0, samp_per_ch = 0):
-        self.c_frame = new SpecFrame(channels_total, samp_per_ch)
+        self.c_frame = new src.SpecFrame(channels_total, samp_per_ch)
 
     def __dealoc__(self):
         if self.c_frame is not NULL:
             del self.c_frame
 
     def initialize(self, **kw):
-        cdef complex2d c_data
+        cdef src.Complex2d c_data
 
         # if "f0" in kw:
         #     self.c_frame.set_central_frequency(kw['f0'])
@@ -370,7 +372,7 @@ cdef class PySpecFrame:
     cdef np.ndarray[np.complex128_t, ndim=2] get_python_data(self):
         cdef int channels_total =  self.c_frame.get_channels_total()
         cdef int samp_per_channel = self.c_frame.get_length()
-        cdef complex2d data = self.c_frame.get_data()
+        cdef float complex * const * data = self.c_frame.get_data()
 
         output = np.zeros(shape=(channels_total, samp_per_channel), dtype=np.complex128)
         for i in range(channels_total):
@@ -392,27 +394,246 @@ cdef class PySpecFrame:
     def get_frequency_resolution(self):
         return self.c_frame.get_frequency_resolution()
 
+    def get_post_id(self):
+        return self.c_frame.get_post_id()
 
-cdef SpecFrame *spec_frame_factory(PySpecFrame frame):
-    cdef SpecFrame *f = frame.c_frame
+
+cdef src.SpecFrame *spec_frame_to_c(SpecFrame frame):
+    cdef src.SpecFrame *f = frame.c_frame
     return f
 
-cdef PySpecFrame py_spec_frame_factory(SpecFrame *c_frame):
-    cdef PySpecFrame frame = PySpecFrame()
+cdef SpecFrame c_to_spec_frame(src.SpecFrame *c_frame):
+    cdef SpecFrame frame = SpecFrame()
     frame.c_frame = c_frame
     return  frame
 
-cdef class PyFrameReader:
-    def __cinit__(self):
-        self.c_frame = new SpecFrame(0,0)
+cdef class FrameSaver:
+    cdef src.SpecFrameSaver *c_saver
+    def __cinit__(self, post_id):
+        self.c_saver = new src.SpecFrameSaver(post_id)
+
 
     def open(self, filename):
         cdef string c_str = filename.encode("utf-8")
-        self.c_reader.open(c_str)
+        self.c_saver.open(c_str)
 
-    def read(self):
-         self.c_reader.read(self.c_frame)
-         return py_spec_frame_factory(self.c_frame)
+    def read_title(self):
+        return self.c_saver.read_title()
+
+    def read(self, frame):
+        self.c_saver.read(spec_frame_to_c(frame))
+
+    def save_title(self, start_period):
+        self.c_saver.save_title(start_period)
+
+    def save(self, frame):
+        self.c_saver.save(frame)
 
     def close(self):
-        self.c_reader.close()
+        self.c_saver.close()
+
+
+cdef class SpecFrameWriter:
+    cdef src.SpecFrameWriter c_writer
+    def __cinit__(self):
+        pass
+
+    cdef src.SpecFrame *get_c_frame(self, SpecFrame frame):
+        cdef src.SpecFrame *f = frame.c_frame
+        return f
+
+    def write_sampling_frequency(self, SpecFrame frame, double fs):
+        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+        self.c_writer.write_sampling_frequency(c_frame, fs)
+
+    def write_central_frequency(self, SpecFrame frame, double f0):
+        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+        self.c_writer.write_central_frequency(c_frame, f0)
+
+    def write_frequency_resolution(self, SpecFrame frame, double f_res):
+        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+        self.c_writer.write_frequency_resolution(c_frame, f_res)
+
+    def write_post_id(self, SpecFrame frame, double post_id):
+        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+        self.c_writer.write_post_id(c_frame, post_id)
+
+    def write_serial(self, SpecFrame frame, int serial):
+        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+        self.c_writer.write_serial(c_frame, serial)
+
+    def write_bound(self, SpecFrame frame, int bound):
+        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+        self.c_writer.write_bound(c_frame, bound)
+
+    def write_data(self, SpecFrame frame, np.ndarray[:,:] data):
+        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+        cdef int channels_total = data.shape[0]
+        cdef int samp_per_channel = data.shape[1]
+        cdef float complex ** c_data
+        self.c_writer.resize(c_frame, channels_total, samp_per_channel)
+        c_data = self.c_writer.get_mutable_data(c_frame)
+
+        for ch in range(channels_total):
+            for s in range(samp_per_channel):
+                c_data[ch][s] = data[ch, s]
+
+    def clear(self, SpecFrame frame):
+        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+        self.c_writer.clear(c_frame)
+
+
+class SpecFrameFactory(SpecFrameWriter):
+
+    def __init__(self):
+        self.frame = SpecFrame()
+
+    def write_sampling_frequency(self, double fs):
+        super().write_sampling_frequency(self.frame, fs)
+
+    def write_central_frequency(self, double f0):
+        super().write_central_frequency(self.frame, f0)
+
+    def write_frequency_resolution(self, double f_res):
+        super().write_frequency_resolution(self.frame, f_res)
+
+    def write_post_id(self, double post_id):
+        super().write_post_id(self.frame, post_id)
+
+    def write_serial(self, int serial):
+        super().write_serial(self.frame, serial)
+
+    def write_bound(self, int bound):
+        super().write_bound(self.frame, bound)
+
+    def write_data(self,  np.ndarray[:,:] data):
+        super().write_data(self.frame, data)
+
+    def clear(self):
+        super().clear(self.frame)
+
+    def get_frame(self):
+        # print("Start deep copying")
+        # frame = copy.deepcopy(self.frame)
+        # print("Stop copying")
+        return  self.frame
+
+
+
+cdef class LhPel:
+    cdef src.LhPel *lh
+    def __cinit__(self, Antenna ant, SpecFrame frame, samp_start, samp_stop, verbose = False):
+        cdef src.Antenna *a = antenna_factory(ant)
+        cdef src.SpecFrame *s = spec_frame_to_c(frame)
+        self.lh = new src.LhPel(a, s, samp_start, samp_stop, verbose)
+
+    def __dealoc__(self):
+        if self.lh is not NULL:
+            del self.lh
+
+    def calc(self, peleng):
+        cdef double output
+
+        output = self.lh.calculate(peleng[0], peleng[1])
+        return output
+
+    def set_verbose(self, arg):
+        self.lh.set_verbose(arg)
+
+    def __reduce_cython__(self):
+        pass
+
+cdef class Pelengator:
+    cdef src.Pelengator *pelengator
+    def __init__(self, Antenna py_ant, frequency_resolution, sampling_frequency):
+        cdef src.Antenna *c_ant = antenna_factory(py_ant)
+        self.pelengator = new src.Pelengator(c_ant[0], frequency_resolution, sampling_frequency)
+
+    def __dealoc__(self):
+        if self.pelengator is not NULL:
+            del self.pelengator
+
+    def set_signal_parameters(self, double f0, int samp_start, int samp_stop):
+        self.pelengator.set_signal_param(f0, samp_start, samp_stop)
+
+    def estimate(self, SpecFrame py_frame):
+        cdef src.SpecFrame *c_frame = spec_frame_to_c(py_frame)
+        cdef src.Estimation estimation = self.pelengator.estimate(c_frame)
+        return np.asarray(estimation)
+
+    def turn_on_interpolation(self, bool turn_on):
+        self.pelengator.turn_on_interpolation(turn_on)
+
+    def set_verbose(self, arg):
+        self.pelengator.set_verbose(arg)
+
+
+cdef class Triangulator:
+    cdef src.Triangulator c_triangulator
+    def __cinit__(self):
+        self.c_triangulator = src.Triangulator()
+
+    def estimate(self, pelengs):
+        cdef vector[src.Peleng] c_pelengs
+        cdef vector[vector[float]] target
+
+        for i in range(len(pelengs)):
+            c_pelengs.push_back(peleng_factory(pelengs[i]))
+
+        target = self.c_triangulator.estimate(c_pelengs)
+        return np.asarray(target)
+
+cdef class Peleng:
+    cdef float azimuth
+    cdef float elevation
+    cdef float probability
+    cdef long int time
+    cdef np.ndarray phase_center
+
+    def __init__(self):
+        self.phase_center = np.zeros(3)
+        self.azimuth = float('nan')
+        self.elevation = float('nan')
+        self.probability = float('nan')
+        self.time = 0
+
+    def get_azimuth(self):
+        return self.azimuth
+
+    def set_azimuth(self, azimuth):
+        self.azimuth = azimuth
+
+    def get_elevation(self):
+        return self.elevation
+
+    def set_elevation(self, elevation):
+        self.elevation = elevation
+
+    def get_probability(self):
+        return self.probability
+
+    def set_probability(self, probability):
+        self.probability = probability
+
+    def get_phase_center(self):
+        return self.phase_center
+
+    def set_phase_center(self, phase_center):
+        self.phase_center = phase_center
+
+
+cdef src.Peleng peleng_factory(Peleng pel):
+    cdef src.Peleng c_pel = src.Peleng()
+    c_pel.azimuth = pel.azimuth
+    c_pel.elevation = pel.elevation
+    c_pel.phase_center = pel.phase_center.tolist()
+    c_pel.time = pel.time
+    return c_pel
+
+cdef Peleng py_peleng_factory(src.Peleng c_pel):
+    cdef Peleng pel = Peleng()
+    pel.azimuth = c_pel.azimuth
+    pel.elevation = c_pel.elevation
+    pel.phase_center = c_pel.phase_center
+    pel.probability = c_pel.probability
+    pel.time = c_pel.time

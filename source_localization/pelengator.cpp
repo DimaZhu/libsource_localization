@@ -54,7 +54,7 @@ void Pelengator::set_signal_param(double carrier, int i_samp_start, int i_samp_s
 
 }
 
-Peleng Pelengator::estimate(SpecFrame *frame)
+Estimation Pelengator::estimate(const SpecFrame * const frame)
 {
     //Предусловия
     assert(frame->get_central_frequency() != 0 && !std::isnan(frame->get_central_frequency()));
@@ -66,7 +66,7 @@ Peleng Pelengator::estimate(SpecFrame *frame)
         printf("\n__Estimating signal parameters__\n");
 
 
-    Peleng estimation;
+    Estimation estimation;
 
    //Расчет матрицы функции правдоподобия
     lh_matrix.clear();
@@ -154,10 +154,10 @@ Peleng Pelengator::estimate(SpecFrame *frame)
     if (verbose)
         printf("Lh at precise min: %f\n",abs(lh(starting_point)));
 
-    estimation.azimuth = starting_point(0);
-    estimation.elevation = starting_point(1);
-    estimation.probability = abs(lh_min);
-    estimation.phase_center = antenna.get_phase_center();
+    estimation.push_back(starting_point(0));
+    estimation.push_back(starting_point(1));
+    estimation.push_back(abs(lh_min));
+   // estimation.phase_center = antenna.get_phase_center();
 
     return estimation;
 }

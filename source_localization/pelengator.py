@@ -13,10 +13,8 @@ from dtypes import PySpecFrame
 from inter import interpolate_min
 
 
-
 def peleng(antenna, target):
     """ calculate pelengs from antenna to target"""
-    import numpy as np
     phase_center = antenna.get_phase_center()
     dr = phase_center - target
     alpha = np.angle(dr[0, 0] + 1j * dr[1, 0])
@@ -25,6 +23,14 @@ def peleng(antenna, target):
     thetta = np.angle(rxy + 1j * (target[2, 0] - phase_center[2, 0]))
     peleng = np.array([alpha, thetta])
     return peleng
+
+
+def time_delay_pattern(antenna, target):
+    """ time delays pattern over antenna array"""
+    elements = antenna.get_elements()
+    target_mat = np.matmul(target, np.ones((1, antenna.get_channels_total())))
+    dr = elements - target_mat
+    return dr/3e8
 
 
 def pel_likelihood(signal, ant_coord, peleng, f0):

@@ -1,6 +1,6 @@
 #include "lhpel.h"
 
-LhPel::LhPel(Antenna *ant, SpecFrame *data, int samp_start, int samp_stop, bool verbose)
+LhPel::LhPel(Antenna *ant, const SpecFrame * const data, int samp_start, int samp_stop, bool verbose)
 {
 
         ant_pairs = ant->get_channels_total() * (ant->get_channels_total()-1) / 2;

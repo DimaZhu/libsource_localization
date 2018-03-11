@@ -8,7 +8,7 @@ class AmpEstimator : public Estimator
 public:
     AmpEstimator();
     void set_signal_parameter(int i_samp_start, int i_samp_stop);
-    Estimation estimate(SpecFrame *frame) const;
+    Estimation estimate(SpecFrame const * const frame) const;
 
 private:
     int samp_start;

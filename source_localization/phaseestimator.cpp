@@ -10,7 +10,7 @@ void PhaseEstimator::set_signal_parameters(int i_samp)
     samp = i_samp;
 }
 
-Estimation PhaseEstimator::estimate(SpecFrame *frame) const
+Estimation PhaseEstimator::estimate(const SpecFrame * const frame) const
 {
     if (samp < frame->get_bound())
         throw std::runtime_error("Sample is out of frame bounds");

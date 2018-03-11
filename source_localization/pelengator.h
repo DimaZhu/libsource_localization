@@ -21,7 +21,7 @@ public:
 
     //void set_signal_param(double central_frequency, double df, int i_carrier_samp);
     void set_signal_param(double carrier, int  i_samp_start, int i_samp_stop);
-    Peleng estimate(SpecFrame *frame);
+    Estimation estimate(SpecFrame const * const frame);
     void turn_on_interpolation(bool turn_on);
     bool is_active();
     void turn_on(bool);

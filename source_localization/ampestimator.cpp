@@ -18,7 +18,7 @@ void AmpEstimator::set_signal_parameter(int i_samp_start, int i_samp_stop)
     samp_stop = i_samp_stop;
 }
 
-Estimation AmpEstimator::estimate(SpecFrame *frame) const
+Estimation AmpEstimator::estimate(const SpecFrame * const frame) const
 {
       if (samp_start < frame->get_bound())
           throw std::runtime_error("Sample is out of frame bounds");

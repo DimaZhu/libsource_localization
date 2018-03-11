@@ -4,19 +4,10 @@ from Cython.Build import cythonize
 import numpy
 
 
-dtypes = Extension(
-    "dtypes",
-    sources=["dtypes.pyx",  "antenna.cpp", "specframe.cpp", "specframereader.cpp"],
-    language="c++",
-    extra_compile_args=['-std=gnu++11'],
-    include_dirs=[numpy.get_include(), './dlib/', './']
-)
-
-
-est = Extension(
-   "pyestimator",
-   sources=["pyestimator.pyx", "pelengator.cpp", "interpolator.cpp", "lhpel.cpp", "lh.cpp", "specframe.cpp",
-            "antenna.cpp", "specframereader.cpp", "gridpel.cpp", "triangulator.cpp",
+source_localization = Extension(
+   "source_localization",
+   sources=["source_localization.pyx", "pelengator.cpp", "interpolator.cpp", "lhpel.cpp", "lh.cpp", "specframe.cpp",
+            "antenna.cpp", "specframesaver.cpp", "gridpel.cpp", "triangulator.cpp",
             "peleng.cpp"],
    language="c++",
    extra_compile_args=['-std=gnu++11'],
@@ -24,4 +15,4 @@ est = Extension(
 )
 
 
-setup(ext_modules=cythonize([dtypes, est]))
+setup(ext_modules=cythonize([source_localization]))

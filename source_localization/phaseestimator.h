@@ -12,7 +12,7 @@ class PhaseEstimator : public Estimator
 public:
     PhaseEstimator();
     void set_signal_parameters(int i_samp);
-    Estimation estimate(SpecFrame *frame) const;
+    Estimation estimate(SpecFrame const * const frame) const;
 
 private:
     int samp;
