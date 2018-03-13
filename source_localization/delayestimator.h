@@ -2,20 +2,20 @@
 #define DELAYESTIMATOR_H
 
 #include <estimator.h>
+#include <dlib/dlib/matrix.h>
 
 class DelayEstimator : public Estimator
 {
 public:
     DelayEstimator();
     void set_signal_parameters(int ref_ch);
-    Estimation estimate(SpecFrame const * const frame);
+    Estimation estimate(SpecFrame const * const frame) const;
 
 private:
-    void convolve(FrameChannel in1, size_t len_in1,
-                  FrameChannel in2, size_t len_in2,
-                  Complex1d out);
+    dlib::matrix<double>  convolve(FrameChannel in1,
+                  FrameChannel in2, size_t len) const;
 
-    int argmax(Complex1d sig, size_t length);
+    int argmax(dlib::matrix<double> sig, size_t length) const;
 
     int ref_ch;
 };

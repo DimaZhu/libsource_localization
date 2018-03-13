@@ -7,7 +7,9 @@ from libcpp.string cimport string
 import numpy as np
 cimport numpy as np
 
-ctypedef  float complex * const * const Complex2d
+ctypedef  float complex * const * const FrameData
+ctypedef  float complex * const FrameChannel
+ctypedef  float complex ** Complex2d
 ctypedef  float complex * Complex1d
 ctypedef  vector[double] Estimation
 
@@ -50,11 +52,11 @@ cdef extern from "specframe.h" nogil:
 cdef extern  from "specframe.h" nogil:
     cdef cppclass SpecFrame:
         SpecFrame(int i_channels_total, int i_samp_per_ch)
+        SpecFrame()
         SpecFrame(SpecFrame &frame)
 
         const SpecFrame &operator=(SpecFrame& frame)
-        const Complex2d get_data(int &channels, int &samp_per_ch) const
-        const Complex2d get_data() const
+        const FrameData get_data() const
         void filter(Complex2d *freq_response)
 
         void erase()
@@ -83,6 +85,8 @@ cdef extern  from "specframe.h" nogil:
 
         int get_bound() const
 
+        int get_serial() const
+
 
 
 cdef extern from "specframewriter.h" nogil:
@@ -96,21 +100,27 @@ cdef extern from "specframewriter.h" nogil:
         void write_serial(SpecFrame *frame, int serial)
         void write_bound(SpecFrame *frame, int bound)
         void write_parent(SpecFrame * frame, SpecFrameParent *parent)
-        float complex **  get_mutable_data(SpecFrame *frame)
+        Complex2d get_mutable_data(SpecFrame *frame)
         void resize(SpecFrame *frame, int channels, int samp_per_ch)
         void clear(SpecFrame *frame)
 
 
 cdef extern from "specframesaver.h" nogil:
     cdef cppclass SpecFrameSaver:
-        SpecFrameSaver(int post_id = -1);
+        SpecFrameSaver(int post_id);
         bool open(string);
-        void save_title(int start_period);
-        int read_title();
-        void read(SpecFrame*);
+        void save_title(float start_period);
         void save(SpecFrame*);
         void close();
 
+
+cdef extern from "specframeloader.h" nogil:
+    cdef cppclass SpecFrameLoader:
+        SpecFrameLoader(int post_id);
+        bool open(string);
+        float read_title();
+        void load(SpecFrame*);
+        void close();
 
 cdef extern from "lh.h":
     cdef cppclass Lh:

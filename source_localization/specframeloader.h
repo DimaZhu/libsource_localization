@@ -1,13 +1,14 @@
-#ifndef FRAME_SAVER_H
-#define FRAME_SAVER_H
+#ifndef SPECFRAMELOADER_H
+#define SPECFRAMELOADER_H
 
 #include <specframe.h>
+#include <specframewriter.h>
 #include <string>
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
 
-// Последовательно сохраняет обьекты класса SpecFrame.
+// Последовательно считывает обьекты класса SpecFrame.
 //
 
 // Формат файла:
@@ -16,17 +17,17 @@
 //      Frame1
 //       ....
 
-// Перед тем как начать записывать кадры, вызывается save_title метод
+// Перед считыванием, необходимо вызвать read_title.
 
 using namespace std;
-class SpecFrameSaver
+class SpecFrameLoader: public SpecFrameWriter
 {
 public:
-    SpecFrameSaver(int post_id = -1);//
+    SpecFrameLoader(int post_id = -1);
     // При значении -1 читает все кадры подряд.
     bool open(string filename);
-    void save_title(float start_period);
-    void save(SpecFrame *frame);
+    float read_title(); // Возвращает период старта
+    bool load(SpecFrame *frame);
     void close();
 
 private:
@@ -34,4 +35,4 @@ private:
     int post_id;
 };
 
-#endif // FRAME_SAVER_H
+#endif // SPECFRAMELOADER_H

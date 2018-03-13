@@ -78,7 +78,9 @@ void SpecFrame::allocate_memory()
     for (int ch = 0; ch < channels_total; ++ch)
         data[ch] = (Complex1d) malloc(samp_per_channel * sizeof(Complex));
 
-    clear();
+    for (int ch = 0; ch < channels_total; ++ch)
+        for (int s = 0; s < samp_per_channel; ++s)
+        data[ch][s] = 0;
 }
 
 void SpecFrame::free_memory()

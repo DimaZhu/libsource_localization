@@ -7,7 +7,7 @@ import numpy
 source_localization = Extension(
    "source_localization",
    sources=["source_localization.pyx", "pelengator.cpp", "interpolator.cpp", "lhpel.cpp", "lh.cpp", "specframe.cpp",
-            "antenna.cpp", "specframesaver.cpp", "gridpel.cpp", "triangulator.cpp",
+            "antenna.cpp", "specframesaver.cpp", "specframeloader.cpp", "gridpel.cpp", "triangulator.cpp",
             "peleng.cpp"],
    language="c++",
    extra_compile_args=['-std=gnu++11'],
