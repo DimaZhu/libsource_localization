@@ -9,8 +9,12 @@
 #include <complex.h>
 #undef complex
 using namespace std;
-typedef  std::complex<float >const  *const *const complex2d;
-typedef  std::complex<float > const * const complex1d;
+typedef  std::complex<float >const  *const *const FrameData;
+typedef  std::complex<float >const  *const FrameChannel;
+typedef  std::complex<float > ** Complex2d;
+typedef  std::complex<float > *  Complex1d;
+typedef  std::complex<float>     Complex;
+
 
 class SpecFrameParent
 {
@@ -36,13 +40,11 @@ public:
     SpecFrame *copy(); //Возвращает ссылку на себя. Только после того, как у всех копий будет вызван метод erase(),
     // будет послан сигнал erased.
 
-    complex2d get_data(int &channels, int &samp_per_ch) const;
+    FrameData get_data() const;
 
-    complex2d get_data() const;
+    void filter(FrameData freq_response); // Одновременная фильтрация всех каналов. КХЧ должны иметь размер полного кадра.
 
-    void filter(complex2d freq_response); // Одновременная фильтрация всех каналов. КХЧ должны иметь размер полного кадра.
-
-    void filter(complex1d freq_response, int ch_ind); // Фильтрация конкретного канала. КХЧ должна иметь размер полного кадра.
+    void filter(Complex1d freq_response, int ch_ind); // Фильтрация конкретного канала. КХЧ должна иметь размер полного кадра.
 
     void erase();  //После обработки кадра, каждый поток вызывает этот метод для уничтожения кадра.
     // Как только кадр освободят все потоки, шлется сигнал erased.

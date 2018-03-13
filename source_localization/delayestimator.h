@@ -11,11 +11,11 @@ public:
     Estimation estimate(SpecFrame const * const frame);
 
 private:
-    void convolve(complex1d in1, size_t len_in1,
-                  complex1d in2, size_t len_in2,
-                  complex<float> * out);
+    void convolve(FrameChannel in1, size_t len_in1,
+                  FrameChannel in2, size_t len_in2,
+                  Complex1d out);
 
-    int argmax(complex<float> *sig, size_t length);
+    int argmax(Complex1d sig, size_t length);
 
     int ref_ch;
 };

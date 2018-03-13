@@ -38,7 +38,7 @@ void SpecFrameSaver::save(SpecFrame *frame)
     double f_res = frame->get_frequency_resolution();
     int bound = frame->get_bound();
     double f0 = frame->get_central_frequency();
-    complex2d data = frame->get_data();
+    FrameData data = frame->get_data();
 
 
     fwrite(&ch_total, sizeof(int), 1, pFile);
@@ -50,7 +50,7 @@ void SpecFrameSaver::save(SpecFrame *frame)
     fwrite(&f0, sizeof(double), 1, pFile);
 
     for (int ch = 0; ch < ch_total; ++ch)
-        fwrite(data[ch], sizeof(complex<float>), samp_per_ch, pFile);
+        fwrite(data[ch], sizeof(Complex), samp_per_ch, pFile);
 }
 
 int SpecFrameSaver::read_title()
@@ -107,10 +107,10 @@ bool SpecFrameSaver::read(SpecFrame *frame)
     write_bound(frame, bound);
     write_central_frequency(frame, f0);
 
-    complex<float> ** data = get_mutable_data(frame);
+    Complex2d data = get_mutable_data(frame);
 
     for (int ch = 0; ch < ch_total; ++ch)
-        fread(data[ch], sizeof(complex<float>), samp_per_ch, pFile);
+        fread(data[ch], sizeof(Complex), samp_per_ch, pFile);
 
     return true;
 

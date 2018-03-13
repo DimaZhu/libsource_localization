@@ -27,7 +27,7 @@ Estimation AmpEstimator::estimate(const SpecFrame * const frame) const
           throw std::runtime_error("Sample is out of frame bounds");
 
       Estimation estimation;
-      complex2d data = frame->get_data();
+      FrameData data = frame->get_data();
 
 
       for (int ch = 0; ch < frame->get_channels_total(); ++ch)

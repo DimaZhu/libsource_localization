@@ -6,7 +6,7 @@ LhPel::LhPel(Antenna *ant, const SpecFrame * const data, int samp_start, int sam
         ant_pairs = ant->get_channels_total() * (ant->get_channels_total()-1) / 2;
         double wave_length = 3e8 / data->get_central_frequency();
         ang_freq = 2 * M_PI  / wave_length;
-        complex2d signal  = data->get_data();
+        FrameData signal  = data->get_data();
 
         if (samp_start >= data->get_length())
             samp_start = data->get_length() - 1;

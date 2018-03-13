@@ -14,12 +14,12 @@ Estimation DelayEstimator::estimate(const SpecFrame * const frame)
 {
 
     Estimation estimation;
-    complex2d data = frame->get_data();
+    FrameData data = frame->get_data();
     size_t sig_len = frame->get_length();
     size_t vcf_len = 2*sig_len - 1;
     double fs = frame->get_sampling_frequency();
 
-    complex<float> *vcf = (complex<float> *) malloc(vcf_len * sizeof(complex<float>));
+    Complex1d vcf = (Complex1d) malloc(vcf_len * sizeof(Complex));
     for (int ch = 0; ch < frame->get_channels_total(); ++ch)
     {
         convolve(data[ref_ch], sig_len,
@@ -35,9 +35,9 @@ Estimation DelayEstimator::estimate(const SpecFrame * const frame)
 }
 
 
-void DelayEstimator::convolve(complex1d in1, size_t len_in1,
-                              complex1d in2, size_t len_in2,
-                              complex<float> * out)
+void DelayEstimator::convolve(FrameChannel in1, size_t len_in1,
+                              FrameChannel in2, size_t len_in2,
+                              Complex1d out)
 {
   size_t n;
 
@@ -62,7 +62,7 @@ void DelayEstimator::convolve(complex1d in1, size_t len_in1,
   }
 }
 
-int DelayEstimator::argmax(complex<float> *sig, size_t length)
+int DelayEstimator::argmax(Complex1d sig, size_t length)
 {
     float max_real = std::real(sig[0]);
     int max_ind_real = 0;

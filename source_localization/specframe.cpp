@@ -32,7 +32,7 @@ SpecFrame::SpecFrame(const SpecFrame &frame):
     free_memory();
     allocate_memory();
 
-    complex2d new_data = frame.get_data();
+    FrameData new_data = frame.get_data();
 
     for (int ch = 0; ch < channels_total; ++ch)
         for (int s = 0; s < samp_per_channel; ++s)
@@ -63,7 +63,7 @@ const SpecFrame &SpecFrame::operator =(const SpecFrame &frame)
         free_memory();
         allocate_memory();
 
-        complex2d new_data = frame.get_data();
+        FrameData new_data = frame.get_data();
 
         for (int ch = 0; ch < channels_total; ++ch)
             for (int s = 0; s < samp_per_channel; ++s)
@@ -74,9 +74,9 @@ const SpecFrame &SpecFrame::operator =(const SpecFrame &frame)
 
 void SpecFrame::allocate_memory()
 {
-    data = (std::complex< float>** ) malloc( channels_total * sizeof(complex<float> *));
+    data = (Complex2d ) malloc( channels_total * sizeof(Complex1d));
     for (int ch = 0; ch < channels_total; ++ch)
-        data[ch] = (complex<float> *) malloc(samp_per_channel * sizeof(complex<float>));
+        data[ch] = (Complex1d) malloc(samp_per_channel * sizeof(Complex));
 
     clear();
 }
@@ -102,19 +102,12 @@ void SpecFrame::resize(int i_channels_total, int i_samp_per_ch)
 
 }
 
-complex2d SpecFrame::get_data(int &channels, int &samp_per_ch) const
-{
-    channels = channels_total;
-    samp_per_ch = samp_per_channel;
-    return data;
-}
-
-complex2d SpecFrame::get_data() const
+FrameData SpecFrame::get_data() const
 {
     return data;
 }
 
-void SpecFrame::filter(complex2d freq_response)
+void SpecFrame::filter(FrameData freq_response)
 {
 
     for (int ch = 0; ch < channels_total; ++ch)
@@ -123,7 +116,7 @@ void SpecFrame::filter(complex2d freq_response)
 
 }
 
-void SpecFrame::filter(complex1d freq_response, int ch_ind)
+void SpecFrame::filter(Complex1d freq_response, int ch_ind)
 {
     for (int s = 0; s < samp_per_channel; ++s)
         data[ch_ind][s] = data[ch_ind][s] * freq_response[s + boundInd];
