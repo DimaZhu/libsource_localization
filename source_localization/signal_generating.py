@@ -43,10 +43,20 @@ for ch in range(ch_total):
             y[ch, delay[ch] + i + p * period] += 1
 
 
-z = ifft(fft(np.real(y[0, :])) * np.real(fft(y[1, :])))
-p = convolve(np.real(y[0, :]), np.real(fft(y[1, :])), mode="same")
+y_pad = np.pad(y, ((0, 0), (0, 0)), mode="constant")
+
+acf = ifft(fft(y_pad[0, :]) * fft(y_pad[0, :]))
+vcf = ifft(fft(y_pad[0, :]) * fft(y_pad[1, :]))
+p = convolve(np.real(y[0, :]), np.real(y[1, :]), mode="same")
+
+
+delay_s_est = np.argmax(vcf) - np.argmax(acf)
+delay_t_est = delay_s_est / fs
+print('Estimated delay is: ', delay_t_est)
+
+
 data = [go.Scatter(x=x,
-                   y=np.real(z),
+                   y=np.real(vcf),
                    mode="lines"),
         go.Scatter(x=x,
                    y=p,

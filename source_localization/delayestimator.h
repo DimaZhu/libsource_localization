@@ -12,10 +12,10 @@ public:
     Estimation estimate(SpecFrame const * const frame) const;
 
 private:
-    dlib::matrix<double>  convolve(FrameChannel in1,
+    dlib::matrix<complex<double>>  convolve(FrameChannel in1,
                   FrameChannel in2, size_t len) const;
 
-    int argmax(dlib::matrix<double> sig, size_t length) const;
+    int argmax(dlib::matrix<complex<double> > sig, size_t length) const;
 
     int ref_ch;
 };

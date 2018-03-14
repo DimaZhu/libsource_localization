@@ -2,6 +2,7 @@
 #include <specframeloader.h>
 #include <delayestimator.h>
 #include <iostream>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
@@ -20,9 +21,9 @@ int main(int argc, char *argv[])
     DelayEstimator estimator;
     Estimation estimation = estimator.estimate(&frame);
 
-    cout << "Estimated delays";
+    qDebug()<< "Estimated delays";
     for (int i = 0; i < frame.get_channels_total(); ++i)
-        cout << "ch " << i << ": " << estimation[i];
+        qDebug() << "ch " << i << ": " << estimation[i] * 1e6 << "мкс";
 
 
     return a.exec();
