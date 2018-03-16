@@ -34,7 +34,7 @@ Estimation DelayEstimator::estimate(SpecFrame const * const frame) const
     for (int ch = 0; ch < frame->get_channels_total(); ++ch)
     {
         int delay_s = indexes[ch] - indexes[ref_ch];
-        float delay_t = delay_s / fs;
+        double delay_t = delay_s / fs;
         estimation.push_back(delay_t);
     }
 
@@ -118,7 +118,7 @@ int DelayEstimator::argmax(dlib::matrix<complex<double>> sig, size_t length) con
         }
     }
 
-
+//    return max_ind_real;
     if (max_real > max_imag)
         return max_ind_real;
     else
