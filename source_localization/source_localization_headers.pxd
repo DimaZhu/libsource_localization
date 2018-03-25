@@ -143,6 +143,7 @@ cdef extern  from "peleng.h" nogil:
         vector[vector[float]] phase_center;
         long int time;
 
+
 cdef extern from "pelengator.h" nogil:
     cdef cppclass Pelengator:
         Pelengator(const Antenna & ant, double frequency_resolution, double sampling_frequency)
@@ -158,3 +159,24 @@ cdef extern from "triangulator.h" nogil:
         void set_active(bool arg);
         bool is_active();
         vector[vector[float]] estimate(vector[Peleng] pelengs);
+
+
+cdef extern from "estimator.h" nogil:
+    cdef cppclass Estimator:
+        Estimator();
+        Estimation estimate(SpecFrame * frame) const;
+
+
+cdef extern from "pseudophaseestimator.h" nogil:
+    cdef cppclass PseudoPhaseEstimator:
+        PseudoPhaseEstimator();
+        void set_signal_parameters(int ref_ch, int  i_samp_start, int i_samp_stop);
+        Estimation estimate(SpecFrame * frame) const
+
+
+cdef extern from "delayestimator.h" nogil:
+    cdef cppclass DelayEstimator:
+        DelayEstimator();
+        void set_signal_parameters(int ref_ch, int  i_samp_start, int i_samp_stop);
+        Estimation estimate(SpecFrame * frame) const
+

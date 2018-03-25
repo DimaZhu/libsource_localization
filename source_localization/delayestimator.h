@@ -2,22 +2,15 @@
 #define DELAYESTIMATOR_H
 
 #include <estimator.h>
-#include <dlib/dlib/matrix.h>
+#include <pseudophaseestimator.h>
 
-class DelayEstimator : public Estimator
+class DelayEstimator : public PseudoPhaseEstimator
 {
 public:
     DelayEstimator();
-    void set_signal_parameters(int ref_ch);
     Estimation estimate(SpecFrame const * const frame) const;
 
-private:
-    dlib::matrix<complex<double>>  convolve(FrameChannel in1,
-                  FrameChannel in2, size_t len) const;
 
-    int argmax(dlib::matrix<complex<double> > sig, size_t length) const;
-
-    int ref_ch;
 };
 
 #endif // DELAYESTIMATOR_H

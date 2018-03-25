@@ -8,7 +8,7 @@ source_localization = Extension(
    "source_localization",
    sources=["source_localization.pyx", "pelengator.cpp", "interpolator.cpp", "lhpel.cpp", "lh.cpp", "specframe.cpp",
             "antenna.cpp", "specframesaver.cpp", "specframeloader.cpp", "gridpel.cpp", "triangulator.cpp",
-            "peleng.cpp"],
+            "peleng.cpp", "estimator.cpp", "pseudophaseestimator.cpp", "delayestimator.cpp"],
    language="c++",
    extra_compile_args=['-std=gnu++11'],
    include_dirs=[numpy.get_include(), './dlib/', './'],

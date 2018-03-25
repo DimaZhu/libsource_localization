@@ -8,15 +8,16 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    SpecFrame frame;
-    SpecFrameLoader loader;
-    bool success = loader.open("/home/dima/Projects/Touchdown/Data/train_imp.bin");
-    if (!success)
-        printf("Enable to open the file");
+    SpecFrame frame(32, 65536);
 
-    loader.read_title();
-    loader.load(&frame);
-    loader.close();
+//    SpecFrameLoader loader;
+//    bool success = loader.open("/home/dima/Projects/Touchdown/Data/train_imp.bin");
+//    if (!success)
+//        printf("Enable to open the file");
+
+//    loader.read_title();
+//    loader.load(&frame);
+//    loader.close();
 
     DelayEstimator estimator;
     Estimation estimation = estimator.estimate(&frame);

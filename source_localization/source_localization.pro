@@ -46,7 +46,8 @@ SOURCES += \
     gridpel.cpp \
     specframesaver.cpp \
     delayestimator.cpp \
-    specframeloader.cpp
+    specframeloader.cpp \
+    pseudophaseestimator.cpp
 
 HEADERS += \
     antenna.h \
@@ -65,7 +66,8 @@ HEADERS += \
     lhpel.h \
     gridpel.h \
     delayestimator.h \
-    specframeloader.h
+    specframeloader.h \
+    pseudophaseestimator.h
 
 unix {
     target.path = /usr/lib

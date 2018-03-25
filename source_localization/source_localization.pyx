@@ -310,7 +310,7 @@ class AntennaSystem:
         return self.antennas.pop(item)
 
     def clear(self):
-        self.antennas.clear()
+        self.antennas._clear()
 
     def show(self):
        """Antenna System visualization via plotly
@@ -335,36 +335,36 @@ ctypedef fused fused_2d_array:
 cdef class SpecFrameWriter:
     cdef src.SpecFrameWriter c_writer
 
-    cdef src.SpecFrame *get_c_frame(self, SpecFrame frame):
+    cdef src.SpecFrame *_get_c_frame(self, SpecFrame frame):
         cdef src.SpecFrame *f = frame.c_frame
         return f
 
-    def write_sampling_frequency(self, SpecFrame frame, double fs):
-        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+    def _write_sampling_frequency(self, SpecFrame frame, double fs):
+        cdef src.SpecFrame *c_frame = self._get_c_frame(frame)
         self.c_writer.write_sampling_frequency(c_frame, fs)
 
-    def write_central_frequency(self, SpecFrame frame, double f0):
-        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+    def _write_central_frequency(self, SpecFrame frame, double f0):
+        cdef src.SpecFrame *c_frame = self._get_c_frame(frame)
         self.c_writer.write_central_frequency(c_frame, f0)
 
-    def write_frequency_resolution(self, SpecFrame frame, double f_res):
-        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+    def _write_frequency_resolution(self, SpecFrame frame, double f_res):
+        cdef src.SpecFrame *c_frame = self._get_c_frame(frame)
         self.c_writer.write_frequency_resolution(c_frame, f_res)
 
-    def write_post_id(self, SpecFrame frame, double post_id):
-        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+    def _write_post_id(self, SpecFrame frame, double post_id):
+        cdef src.SpecFrame *c_frame = self._get_c_frame(frame)
         self.c_writer.write_post_id(c_frame, post_id)
 
-    def write_serial(self, SpecFrame frame, int serial):
-        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+    def _write_serial(self, SpecFrame frame, int serial):
+        cdef src.SpecFrame *c_frame = self._get_c_frame(frame)
         self.c_writer.write_serial(c_frame, serial)
 
-    def write_bound(self, SpecFrame frame, int bound):
-        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+    def _write_bound(self, SpecFrame frame, int bound):
+        cdef src.SpecFrame *c_frame = self._get_c_frame(frame)
         self.c_writer.write_bound(c_frame, bound)
 
-    def write_data(self, SpecFrame frame, fused_2d_array data):
-        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+    def _write_data(self, SpecFrame frame, fused_2d_array data):
+        cdef src.SpecFrame *c_frame = self._get_c_frame(frame)
         cdef int channels_total = data.shape[0]
         cdef int samp_per_channel = data.shape[1]
         cdef src.Complex2d c_data
@@ -376,11 +376,11 @@ cdef class SpecFrameWriter:
                 c_data[ch][s] = data[ch, s]
 
 
-    cdef src.Complex2d get_mutable_data(self, src.SpecFrame *frame):
+    cdef src.Complex2d _get_mutable_data(self, src.SpecFrame *frame):
         return self.c_writer.get_mutable_data(frame)
 
-    def clear(self, SpecFrame frame):
-        cdef src.SpecFrame *c_frame = self.get_c_frame(frame)
+    def _clear(self, SpecFrame frame):
+        cdef src.SpecFrame *c_frame = self._get_c_frame(frame)
         self.c_writer.clear(c_frame)
 
 cdef class SpecFrame(SpecFrameWriter):
@@ -391,23 +391,23 @@ cdef class SpecFrame(SpecFrameWriter):
         self.c_frame = new src.SpecFrame(0, 0)
 
         if "f0" in kw:
-            self.write_central_frequency(self, kw['f0'])
+            self._write_central_frequency(self, kw['f0'])
 
         if "fs" in kw:
-            self.write_sampling_frequency(self, kw['fs'])
+            self._write_sampling_frequency(self, kw['fs'])
 
         if 'f_res' in kw:
-            self.write_frequency_resolution(self, kw['f_res'])
+            self._write_frequency_resolution(self, kw['f_res'])
 
         if 'post_id' in kw:
-            self.write_post_id(self, kw['post_id'])
+            self._write_post_id(self, kw['post_id'])
 
         if 'serial' in kw:
-            self.write_serial(self, kw['serial'])
+            self._write_serial(self, kw['serial'])
 
         if 'sig' in kw:
             sig = kw['sig']
-            self.write_data(self, sig)
+            self._write_data(self, sig)
 
 
     def __dealoc__(self):
@@ -418,7 +418,7 @@ cdef class SpecFrame(SpecFrameWriter):
     cdef np.ndarray[np.complex128_t, ndim=2] get_python_data(self):
         cdef int channels_total =  self.c_frame.get_channels_total()
         cdef int samp_per_channel = self.c_frame.get_length()
-        cdef src.Complex2d data = self.get_mutable_data(self.c_frame)
+        cdef src.Complex2d data = self._get_mutable_data(self.c_frame)
 
         output = np.zeros(shape=(channels_total, samp_per_channel), dtype=np.complex128)
         for i in range(channels_total):
@@ -431,38 +431,41 @@ cdef class SpecFrame(SpecFrameWriter):
     def get_data(self):
         return self.get_python_data()
 
+    def set_data(self, data):
+        self._write_data(self, data)
+
     def get_central_frequency(self):
         return self.c_frame.get_central_frequency()
 
     def set_central_frequency(self, f0):
-        self.write_central_frequency(self, f0)
+        self._write_central_frequency(self, f0)
 
     def get_sampling_frequency(self):
         return self.c_frame.get_sampling_frequency()
 
     def set_sampling_frequency(self, fs):
-        self.write_sampling_frequency(self, fs)
+        self._write_sampling_frequency(self, fs)
 
     def get_frequency_resolution(self):
         return self.c_frame.get_frequency_resolution()
 
     def set_frequency_resolution(self, f_res):
-        self.write_frequency_resolution(self, f_res)
+        self._write_frequency_resolution(self, f_res)
 
     def get_post_id(self):
         return self.c_frame.get_post_id()
 
     def set_post_id(self, post_id):
-        self.write_post_id(self, post_id)
+        self._write_post_id(self, post_id)
 
     def get_serial(self):
         return self.c_frame.get_serial()
 
     def set_serial(self, serial):
-        return self.write_serial(self, serial)
+        return self._write_serial(self, serial)
 
-    def clear(self):
-        super().clear(self)
+    def _clear(self):
+        super()._clear(self)
 
 
 cdef src.SpecFrame *spec_frame_to_c(SpecFrame frame):
@@ -667,3 +670,29 @@ cdef Peleng py_peleng_factory(src.Peleng c_pel):
     pel.phase_center = c_pel.phase_center
     pel.probability = c_pel.probability
     pel.time = c_pel.time
+
+
+cdef class PseudoPhaseEstimator:
+    cdef src.PseudoPhaseEstimator c_pp_estimator
+
+    def set_signal_parameters(self, ch_ref, samp_start, samp_stop):
+        self.c_pp_estimator.set_signal_parameters(ch_ref, samp_start, samp_stop)
+
+
+    def estimate(self, frame):
+        cdef src.SpecFrame *c_frame = spec_frame_to_c(frame)
+        estimation = self.c_pp_estimator.estimate(c_frame)
+        return np.asarray(estimation)
+
+
+cdef class DelayEstimator:
+    cdef src.DelayEstimator c_d_estimator
+
+    def set_signal_parameters(self, ch_ref, samp_start, samp_stop):
+        self.c_d_estimator.set_signal_parameters(ch_ref, samp_start, samp_stop)
+
+
+    def estimate(self, frame):
+        cdef src.SpecFrame * c_frame = spec_frame_to_c(frame)
+        estimation = self.c_d_estimator.estimate(c_frame)
+        return np.asarray(estimation)
