@@ -59,7 +59,6 @@ float SpecFrameLoader::read_title()
 
 bool SpecFrameLoader::load(SpecFrame *frame)
 {
-    clear(frame);
 
     if(pFile == NULL)
         throw std::runtime_error("File wasn't opened");
