@@ -77,6 +77,10 @@ bool SpecFrameLoader::load(SpecFrame *frame)
 
 
     fread(&ch_total, sizeof(int), 1, pFile);
+
+    if (feof(pFile))
+        return false;
+
     fread(&samp_per_ch, sizeof(int), 1, pFile);
     fread(&serial, sizeof(int), 1, pFile);
     fread(&fs, sizeof(double), 1, pFile);
