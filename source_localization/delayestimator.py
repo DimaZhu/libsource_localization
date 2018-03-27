@@ -9,8 +9,8 @@ import siggen
 
 length = 2**16
 fs = 100e6
-t_pulse_width = 1e-6
-t_period = 120.33333333e-6
+t_pulse_width = 600e-6
+t_period = 650e-6
 snr = 0  # dB
 start_period = 1
 central_freq = 50e6
@@ -19,13 +19,13 @@ post_id = 0
 serial = 0
 f_res = fs / length
 
-n_start = 39320 - 400
-n_stop = 39320 + 400
+n_start = 39322 - 22
+n_stop = 39322 + 22
 ref_ch = 0
 
 
 sys = src.AntennaSystem()
-sys.load("/home/dima/.touchdown/LandingSystem.ini")
+sys.load("/home/dima/.landing/LandingSystem.ini")
 
 antenna = src.Antenna()
 antenna = sys[0]
@@ -45,8 +45,8 @@ estimator = src.DelayEstimator()
 estimator.set_signal_parameters(ref_ch, n_start, n_stop)
 time_delay_est = estimator.estimate(frame)
 
-# amp = np.abs(s_f[0, :])
-# phase = np.angle(s_f[1, :]) - np.angle(s_f[0, :])
+amp = np.abs(s_f[0, :])
+phase = np.angle(s_f[1, :]) - np.angle(s_f[0, :])
 
 
 test_passed = True
@@ -66,15 +66,15 @@ for ch in range(antenna.get_channels_total()):
         test_passed = False
 
 
-# data = [go.Scatter(
-#                    y=amp,
-#                    mode="lines")]
-#         # go.Scatter(x=x,
-#         #            y=y[1, :],
-#         #            mode="lines")]
-#
-#
-# ply.plot(data)
+data = [go.Scatter(
+                   y=amp,
+                   mode="lines")]
+        # go.Scatter(x=x,
+        #            y=y[1, :],
+        #            mode="lines")]
+
+
+ply.plot(data)
 
 
 if test_passed is True:

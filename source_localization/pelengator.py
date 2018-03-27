@@ -8,8 +8,7 @@ __author__ = 'Dmitry Zhukov'
 import numpy as np
 import scipy as sp
 import siggen
-from pyestimator import PyLh_Pel
-from dtypes import PySpecFrame
+from source_localization import LhPel, SpecFrame
 from inter import interpolate_min
 
 
@@ -29,7 +28,7 @@ def time_delay_pattern(antenna, target):
     """ time delays pattern over antenna array"""
     elements = antenna.get_elements()
     target_mat = np.matmul(target, np.ones((1, antenna.get_channels_total())))
-    dr = elements - target_mat
+    dr = np.sqrt(np.sum((elements - target_mat)**2, axis = 0))
     return dr/3e8
 
 
@@ -148,10 +147,10 @@ def iarp(antenna, f0, df, fs, f_res, shape, **keywords):
     likelihood = np.zeros(shape)
 
     s_cutted = s[:, n_start:n_stop+1]
-    frame = PySpecFrame(antenna.get_channels_total(), N)
+    frame = SpecFrame(antenna.get_channels_total(), N)
     frame.set_data(s_cutted)
     frame.set_carrier(f0)
-    lh = PyLh_Pel(antenna, frame, 0, n_stop - n_start, True)
+    lh = LhPel(antenna, frame, 0, n_stop - n_start, True)
 
     for i in range(shape[0]):
         for j in range(shape[1]):
@@ -310,7 +309,7 @@ class PelengEstimator:
         likelihood = np.zeros(self.lh_size)
 
         #lh_fun = PyLh_Pel(signal, self.antenna, self.f0)
-        lh_fun = PyLh_Pel(self.antenna, signal)
+        lh_fun = LhPel(self.antenna, signal)
 
 
         # xopt, fopt = pyswarm.pso(lh_fun.calc, [0, -np.pi/2], [2 * np.pi, np.pi/2])
